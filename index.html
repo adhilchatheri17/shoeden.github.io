@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <section id="login-screen" class="login-screen">
         <form id="loginForm" class="login-card">
@@ -26,7 +28,8 @@
             </div>
             <div class="form-group">
                 <label for="loginPassword">Password</label>
-                <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Password" required>
+                <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Password"
+                    required>
             </div>
             <button type="submit" class="btn btn-primary w-full">
                 <i class="fa-solid fa-right-to-bracket"></i>
@@ -225,7 +228,8 @@
 
                                 <div class="form-group">
                                     <label for="orderNotes">Notes</label>
-                                    <textarea id="orderNotes" rows="4" placeholder="Payment, transport, address, or packing notes"></textarea>
+                                    <textarea id="orderNotes" rows="4"
+                                        placeholder="Payment, transport, address, or packing notes"></textarea>
                                 </div>
                             </div>
 
@@ -235,7 +239,8 @@
                                         <h3>Products</h3>
                                         <span>Only valid colors are shown</span>
                                     </div>
-                                    <button type="button" class="btn btn-compact btn-secondary" id="add-item-btn" title="Add item">
+                                    <button type="button" class="btn btn-compact btn-secondary" id="add-item-btn"
+                                        title="Add item">
                                         <i class="fa-solid fa-plus"></i>
                                         <span>Add Item</span>
                                     </button>
@@ -262,10 +267,11 @@
                         <div class="table-controls">
                             <div class="search-box">
                                 <i class="fa-solid fa-magnifying-glass"></i>
-                                <input type="text" id="search-orders" placeholder="Search ID, agent, customer, phone, area">
+                                <input type="text" id="search-orders"
+                                    placeholder="Search ID, agent, customer, phone, area">
                             </div>
                         </div>
-                        
+
                         <div class="godown-tabs" id="godown-tabs-container">
                             <!-- Tabs generated from app.js -->
                         </div>
@@ -354,4 +360,5 @@
     <script src="supabase-config.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>
