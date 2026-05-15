@@ -496,6 +496,25 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
 }
 
+input[type="date"] {
+  color-scheme: dark;
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  padding: 4px;
+  margin: 0;
+  opacity: 0.7;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 .btn {
   border: 1px solid var(--white);
   border-radius: var(--radius);
@@ -822,8 +841,10 @@ select:focus {
 
 .stock-scroll {
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  touch-action: pan-x pan-y;
 }
 
 .stock-table {
@@ -1372,6 +1393,13 @@ td span {
   .stock-legend span {
     padding: 5px 8px;
     font-size: 0.75rem;
+  }
+
+  .stock-scroll {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    overscroll-behavior-x: contain;
   }
 
   .stock-table {
