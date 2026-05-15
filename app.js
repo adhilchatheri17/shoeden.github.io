@@ -44,11 +44,11 @@ const INVENTORY_CONFIG = {
 };
 
 const GODOWNS = [
-    { id: "Chennai", label: "1st Chennai", group: "ShoeDen Chennai Group" },
-    { id: "Erode", label: "2nd Erode", group: "ShoeDen Erode Group" },
-    { id: "Kallakurichi", label: "3rd Kallakurichi", group: "ShoeDen Kallakurichi Group" },
-    { id: "Madurai", label: "4th Madurai", group: "ShoeDen Madurai Group" },
-    { id: "Kanyakumari", label: "5th Kanyakumari", group: "ShoeDen Kanyakumari Group" }
+    { id: "Chennai", label: "Chennai", group: "ShoeDen Chennai Group" },
+    { id: "Erode", label: "Erode", group: "ShoeDen Erode Group" },
+    { id: "Kallakurichi", label: "Kallakurichi", group: "ShoeDen Kallakurichi Group" },
+    { id: "Madurai", label: "Madurai", group: "ShoeDen Madurai Group" },
+    { id: "Kanyakumari", label: "Kanyakumari", group: "ShoeDen Kanyakumari Group" }
 ];
 
 const STOCK_VARIANTS = buildStockVariants();

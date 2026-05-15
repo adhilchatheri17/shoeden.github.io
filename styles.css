@@ -50,7 +50,7 @@ body {
   display: block;
   object-fit: contain;
   margin: 0 auto 18px;
-  border: 1px solid var(--line-strong);
+  border: none;
   border-radius: var(--radius);
   background: var(--white);
 }
@@ -116,7 +116,7 @@ button {
   width: 64px;
   height: 64px;
   object-fit: contain;
-  border: 1px solid #111;
+  border: none;
   border-radius: var(--radius);
   background: #fff;
 }
