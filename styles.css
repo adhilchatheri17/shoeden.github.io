@@ -785,6 +785,28 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   margin-bottom: 10px;
 }
 
+.order-card-date {
+  margin-bottom: 10px;
+}
+
+.order-date-input {
+  width: 100%;
+  min-height: 34px;
+  padding: 5px 8px;
+  font-size: 0.82rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted-2);
+  color-scheme: dark;
+}
+
+.order-date-input:focus {
+  border-color: var(--white);
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .order-card-line {
   display: grid;
   gap: 3px;

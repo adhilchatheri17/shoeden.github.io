@@ -678,6 +678,7 @@ function renderOrdersTable() {
 
 function renderOrderCard(order) {
     const status = order.status || "New";
+    const dateVal = toDateInputValue(order.date);
     return `
         <article class="order-card">
             <div class="order-card-top">
@@ -686,7 +687,9 @@ function renderOrderCard(order) {
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </div>
-            <time>${formatDate(order.date)}</time>
+            <div class="order-card-date">
+                <input type="date" class="order-date-input" value="${dateVal}" onchange="updateOrderDate('${order.id}', this.value)" title="Change order date">
+            </div>
             <div class="order-card-line">
                 <b>Agent</b>
                 <span>${order.agentName}</span>
@@ -863,6 +866,29 @@ window.updateOrderStatus = async function(orderId, status) {
     }
 };
 
+window.updateOrderDate = async function(orderId, newDateValue) {
+    const order = orders.find(entry => entry.id === orderId);
+    if (!order || !newDateValue) return;
+    const previousDate = order.date;
+    order.date = new Date(newDateValue).toISOString();
+    updateDashboard();
+
+    try {
+        await requireSession();
+        const { error } = await supabaseClient
+            .from("orders")
+            .update({ date: order.date })
+            .eq("id", orderId);
+        if (error) throw error;
+        showToast("Date updated.");
+    } catch (error) {
+        order.date = previousDate;
+        renderOrdersTable();
+        updateDashboard();
+        showToast("Date was not saved in Supabase.", true);
+    }
+};
+
 window.deleteOrder = async function(orderId) {
     if (!confirm("Delete this order?")) return;
     const previousOrders = [...orders];
@@ -903,18 +929,33 @@ window.logout = async function() {
 };
 
 window.exportData = function() {
-    const header = [
+    const headerCols = [
         "Order ID", "Date", "Status", "Godown", "WhatsApp Group", "Agent",
         "Customer", "Phone", "Delivery Area", "Product", "Color", "Quantity", "Notes"
     ];
-    const rows = [header];
+
+    let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><style>
+  table { border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11pt; }
+  th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+  th { background: #222; color: #fff; font-weight: bold; }
+  .delivered { background: #c6efce; color: #006100; }
+  .returned { background: #ffc7ce; color: #9c0006; }
+</style></head><body><table>`;
+
+    tableHtml += "<tr>" + headerCols.map(h => `<th>${h}</th>`).join("") + "</tr>";
 
     orders.forEach(order => {
+        const status = order.status || "New";
+        let rowClass = "";
+        if (status === "Delivered") rowClass = ' class="delivered"';
+        if (status === "Returned") rowClass = ' class="returned"';
+
         order.items.forEach(item => {
-            rows.push([
+            const cells = [
                 order.id,
                 new Date(order.date).toLocaleString(),
-                order.status || "New",
+                status,
                 order.godownLocation,
                 order.whatsappGroup || getGodownGroup(order.godownLocation),
                 order.agentName,
@@ -925,17 +966,22 @@ window.exportData = function() {
                 item.color || "",
                 item.qty,
                 order.notes || ""
-            ]);
+            ];
+            tableHtml += `<tr${rowClass}>` + cells.map(c => `<td>${escapeHtml(String(c ?? ""))}</td>`).join("") + "</tr>";
         });
     });
 
-    const csv = rows.map(row => row.map(csvCell).join(",")).join("\r\n");
+    tableHtml += "</table></body></html>";
+
+    const blob = new Blob([tableHtml], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
-    link.download = `shoeden_orders_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.href = url;
+    link.download = `shoeden_orders_${new Date().toISOString().slice(0, 10)}.xls`;
     document.body.appendChild(link);
     link.click();
     link.remove();
+    URL.revokeObjectURL(url);
 };
 
 function renderCatalog() {
@@ -1014,6 +1060,19 @@ function createOrderId(godown) {
 
 function formatDate(date) {
     return new Date(date).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+}
+
+function toDateInputValue(date) {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+}
+
+function escapeHtml(text) {
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 function csvCell(value) {
