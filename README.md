@@ -12,6 +12,13 @@ Static order-management app for ShoeDen, designed for GitHub Pages with Supabase
 
 The login screen keeps the simple local username `admin`; the app maps it to `admin@shoeden.com` before logging in with Supabase Auth.
 
+The app stores:
+
+- `orders`: agent/customer orders and delivery status.
+- `godown_stocks`: editable stock quantity per godown, product, and color.
+
+The Stock screen calculates dispatched-but-not-delivered hold quantity from orders with status `Dispatched`.
+
 ## GitHub Pages
 
 Deploy the repository root from the `main` branch.

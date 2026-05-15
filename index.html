@@ -57,6 +57,10 @@
                     <i class="fa-solid fa-list-check"></i>
                     <span>Orders</span>
                 </button>
+                <button class="nav-item" data-target="stock">
+                    <i class="fa-solid fa-warehouse"></i>
+                    <span>Stock</span>
+                </button>
                 <button class="nav-item" data-target="catalog">
                     <i class="fa-solid fa-boxes-stacked"></i>
                     <span>Catalog</span>
@@ -108,7 +112,7 @@
                         <div class="stat-card">
                             <span class="stat-icon"><i class="fa-solid fa-truck-fast"></i></span>
                             <div>
-                                <p>Pending Dispatch</p>
+                                <p>Dispatched Pending</p>
                                 <strong id="stat-pending">0</strong>
                             </div>
                         </div>
@@ -230,25 +234,39 @@
                             <select id="filter-status"></select>
                         </div>
 
-                        <div class="table-responsive">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Order</th>
-                                        <th>Godown</th>
-                                        <th>Agent / Customer</th>
-                                        <th>Items</th>
-                                        <th>Status</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="orders-table-body"></tbody>
-                            </table>
-                            <div id="no-orders-message" class="empty-state hide">
-                                <i class="fa-solid fa-folder-open"></i>
-                                <h3>No orders found</h3>
-                                <p>Try another search or add a new order.</p>
+                        <div id="orders-board" class="orders-board"></div>
+                        <div id="no-orders-message" class="empty-state hide">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <h3>No orders found</h3>
+                            <p>Try another search or add a new order.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="stock" class="view-section hide">
+                    <div class="panel">
+                        <div class="panel-heading row">
+                            <div>
+                                <h3>Godown Stock</h3>
+                                <span>On hand stock, dispatched pending delivery, and available balance.</span>
                             </div>
+                            <button class="btn btn-secondary btn-compact" onclick="loadAppData()" title="Refresh stock">
+                                <i class="fa-solid fa-rotate"></i>
+                                <span>Refresh</span>
+                            </button>
+                        </div>
+
+                        <div class="stock-legend">
+                            <span><b>Stock</b> editable physical quantity in godown</span>
+                            <span><b>Hold</b> dispatched but not delivered</span>
+                            <span><b>Avail</b> stock minus hold</span>
+                        </div>
+
+                        <div class="stock-scroll">
+                            <table class="stock-table">
+                                <thead id="stock-table-head"></thead>
+                                <tbody id="stock-table-body"></tbody>
+                            </table>
                         </div>
                     </div>
                 </section>

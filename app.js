@@ -51,7 +51,9 @@ const GODOWNS = [
     { id: "Kanyakumari", label: "5th Kanyakumari", group: "ShoeDen Kanyakumari Group" }
 ];
 
+const STOCK_VARIANTS = buildStockVariants();
 const STATUSES = ["New", "Packed", "Dispatched", "Delivered"];
+const ACTIVE_STATUSES = ["New", "Packed", "Dispatched"];
 const SUPABASE_CONFIG = window.SHOEDEN_SUPABASE || {};
 const SUPABASE_IS_CONFIGURED = Boolean(
     SUPABASE_CONFIG.url &&
@@ -64,6 +66,7 @@ const supabaseClient = SUPABASE_IS_CONFIGURED
     : null;
 
 let orders = [];
+let stocks = [];
 
 const navItems = document.querySelectorAll(".nav-item");
 const views = document.querySelectorAll(".view-section");
@@ -89,7 +92,11 @@ const navConfig = {
     },
     "orders-list": {
         title: "Orders",
-        subtitle: "Search, filter, export, update status, and delete orders."
+        subtitle: "Godown-wise order board with delivered orders separated."
+    },
+    stock: {
+        title: "Stock",
+        subtitle: "Manage each godown stock and see dispatched pending delivery."
     },
     catalog: {
         title: "Catalog",
@@ -121,7 +128,7 @@ function setupLogin() {
             if (error) throw error;
             loginForm.reset();
             showApp();
-            await loadOrders();
+            await loadAppData();
             showToast("Logged in.");
         } catch (error) {
             showToast("Invalid username or password.", true);
@@ -139,7 +146,7 @@ async function checkLogin() {
         const { data, error } = await supabaseClient.auth.getSession();
         if (error || !data.session) throw error || new Error("Not logged in");
         showApp();
-        await loadOrders();
+        await loadAppData();
     } catch (error) {
         showLogin();
     }
@@ -211,6 +218,23 @@ function setupControls() {
     filterStatus.addEventListener("change", renderOrdersTable);
 }
 
+function buildStockVariants() {
+    return Object.entries(INVENTORY_CONFIG).flatMap(([productKey, product]) => {
+        const colors = product.colors.length ? product.colors : [""];
+        return colors.map(color => ({
+            key: stockKey(productKey, color),
+            product: productKey,
+            color,
+            label: product.name,
+            category: product.category
+        }));
+    });
+}
+
+function stockKey(product, color = "") {
+    return `${product}__${color || "NO_COLOR"}`;
+}
+
 async function loadOrders() {
     try {
         await requireSession();
@@ -222,10 +246,34 @@ async function loadOrders() {
         orders = (data || []).map(fromDbOrder);
         updateDashboard();
         renderOrdersTable();
+        renderStockTable();
     } catch (error) {
         showToast("Could not load orders from Supabase.", true);
         updateDashboard();
     }
+}
+
+async function loadStocks() {
+    try {
+        await requireSession();
+        const { data, error } = await supabaseClient
+            .from("godown_stocks")
+            .select("*")
+            .order("product", { ascending: true })
+            .order("color", { ascending: true })
+            .order("godown_location", { ascending: true });
+        if (error) throw error;
+        stocks = data || [];
+        renderStockTable();
+    } catch (error) {
+        showToast("Could not load stock from Supabase.", true);
+        renderStockTable();
+    }
+}
+
+async function loadAppData() {
+    await loadOrders();
+    await loadStocks();
 }
 
 function setupNavigation() {
@@ -245,6 +293,7 @@ function setupNavigation() {
 
             if (targetId === "dashboard") updateDashboard();
             if (targetId === "orders-list") renderOrdersTable();
+            if (targetId === "stock") renderStockTable();
         });
     });
 }
@@ -371,6 +420,7 @@ async function saveNewOrder() {
         addNewItem();
         updateDashboard();
         renderOrdersTable();
+        renderStockTable();
         showToast("Order saved.");
         document.querySelector('[data-target="dashboard"]').click();
     } catch (error) {
@@ -416,7 +466,7 @@ function updateDashboard() {
         if (godownCounts[order.godownLocation] !== undefined) godownCounts[order.godownLocation]++;
         const status = order.status || "New";
         if (statusCounts[status] !== undefined) statusCounts[status]++;
-        if (status !== "Delivered") pending++;
+        if (status === "Dispatched") pending++;
         order.items.forEach(item => {
             totalQty += Number.parseInt(item.qty, 10) || 0;
         });
@@ -489,17 +539,18 @@ function renderRecentOrders() {
 }
 
 function renderOrdersTable() {
-    const tbody = document.getElementById("orders-table-body");
+    const board = document.getElementById("orders-board");
     const noOrders = document.getElementById("no-orders-message");
-    const table = document.querySelector(".data-table");
+    if (!board || !noOrders) return;
+
     const search = document.getElementById("search-orders").value.toLowerCase();
     const godownFilter = document.getElementById("filter-godown").value;
     const statusFilter = document.getElementById("filter-status").value;
     let matches = 0;
 
-    tbody.innerHTML = "";
+    board.innerHTML = "";
 
-    orders.forEach(order => {
+    const filteredOrders = orders.filter(order => {
         const searchText = [
             order.id,
             order.agentName,
@@ -510,45 +561,192 @@ function renderOrdersTable() {
             order.whatsappGroup
         ].join(" ").toLowerCase();
         const status = order.status || "New";
-        const matchesSearch = searchText.includes(search);
-        const matchesGodown = godownFilter === "All" || order.godownLocation === godownFilter;
-        const matchesStatus = statusFilter === "All" || status === statusFilter;
+        return searchText.includes(search) &&
+            (godownFilter === "All" || order.godownLocation === godownFilter) &&
+            (statusFilter === "All" || status === statusFilter);
+    });
 
-        if (!matchesSearch || !matchesGodown || !matchesStatus) return;
-        matches++;
+    GODOWNS.forEach(godown => {
+        const godownOrders = filteredOrders.filter(order => order.godownLocation === godown.id);
+        if (!godownOrders.length && godownFilter !== godown.id) return;
+        matches += godownOrders.length;
 
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td>
-                <strong>${order.id}</strong>
-                <span>${formatDate(order.date)}</span>
-            </td>
-            <td>
-                <strong>${order.godownLocation}</strong>
-                <span>${order.whatsappGroup || getGodownGroup(order.godownLocation)}</span>
-            </td>
-            <td>
-                <strong>${order.agentName}</strong>
-                <span>${customerLine(order)}</span>
-            </td>
-            <td class="items-cell">${formatItems(order.items)}</td>
-            <td>
-                <select class="status-select" onchange="updateOrderStatus('${order.id}', this.value)">
-                    ${STATUSES.map(value => `<option value="${value}" ${value === status ? "selected" : ""}>${value}</option>`).join("")}
-                </select>
-            </td>
-            <td class="actions-cell">
-                <button class="icon-button danger" onclick="deleteOrder('${order.id}')" title="Delete order">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
-            </td>
-        `;
-        tbody.appendChild(row);
+        const statusColumns = [...ACTIVE_STATUSES, "Delivered"].map(status => {
+            const statusOrders = godownOrders.filter(order => (order.status || "New") === status);
+            return `
+                <div class="order-column ${status === "Delivered" ? "delivered-column" : ""}">
+                    <div class="order-column-title">
+                        <span>${status}</span>
+                        <b>${statusOrders.length}</b>
+                    </div>
+                    <div class="order-card-list">
+                        ${statusOrders.length ? statusOrders.map(renderOrderCard).join("") : '<div class="empty-column">No orders</div>'}
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        board.insertAdjacentHTML("beforeend", `
+            <section class="godown-board">
+                <div class="godown-board-head">
+                    <div>
+                        <h3>${godown.label}</h3>
+                        <span>${godown.group}</span>
+                    </div>
+                    <strong>${godownOrders.length} orders</strong>
+                </div>
+                <div class="order-columns">${statusColumns}</div>
+            </section>
+        `);
     });
 
     noOrders.classList.toggle("hide", matches > 0);
-    table.classList.toggle("hide", matches === 0);
+    board.classList.toggle("hide", matches === 0);
 }
+
+function renderOrderCard(order) {
+    const status = order.status || "New";
+    return `
+        <article class="order-card">
+            <div class="order-card-top">
+                <strong>${order.id}</strong>
+                <button class="icon-button danger" onclick="deleteOrder('${order.id}')" title="Delete order">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+            <time>${formatDate(order.date)}</time>
+            <div class="order-card-line">
+                <b>Agent</b>
+                <span>${order.agentName}</span>
+            </div>
+            <div class="order-card-line">
+                <b>Customer</b>
+                <span>${customerLine(order)}</span>
+            </div>
+            <div class="items-cell">${formatItems(order.items)}</div>
+            <select class="status-select" onchange="updateOrderStatus('${order.id}', this.value)">
+                ${STATUSES.map(value => `<option value="${value}" ${value === status ? "selected" : ""}>${value}</option>`).join("")}
+            </select>
+        </article>
+    `;
+}
+
+function renderStockTable() {
+    const head = document.getElementById("stock-table-head");
+    const body = document.getElementById("stock-table-body");
+    if (!head || !body) return;
+
+    const holds = calculateDispatchedHolds();
+
+    head.innerHTML = `
+        <tr>
+            <th>Product</th>
+            ${GODOWNS.map(godown => `<th>${godown.label}</th>`).join("")}
+            <th>Total Available</th>
+        </tr>
+    `;
+
+    body.innerHTML = STOCK_VARIANTS.map(variant => {
+        let totalAvailable = 0;
+        const godownCells = GODOWNS.map(godown => {
+            const stockQty = getStockQty(godown.id, variant.product, variant.color);
+            const holdQty = holds.get(stockKeyForGodown(godown.id, variant.product, variant.color)) || 0;
+            const available = stockQty - holdQty;
+            totalAvailable += available;
+            const availableClass = available < 0 ? "negative" : available <= 3 ? "low" : "";
+
+            return `
+                <td>
+                    <div class="stock-cell">
+                        <input
+                            type="number"
+                            min="0"
+                            value="${stockQty}"
+                            onchange="updateStockQuantity('${jsString(godown.id)}', '${jsString(variant.product)}', '${jsString(variant.color)}', this.value)"
+                            aria-label="${variant.label} ${variant.color || "stock"} ${godown.label}"
+                        >
+                        <div class="stock-metrics">
+                            <span>Hold <b>${holdQty}</b></span>
+                            <span>Avail <b class="${availableClass}">${available}</b></span>
+                        </div>
+                    </div>
+                </td>
+            `;
+        }).join("");
+
+        return `
+            <tr>
+                <td class="stock-product">
+                    <strong>${variant.label}</strong>
+                    <span>${variant.color || "No color"} / ${variant.category}</span>
+                </td>
+                ${godownCells}
+                <td><strong class="${totalAvailable < 0 ? "negative" : totalAvailable <= 10 ? "low" : ""}">${totalAvailable}</strong></td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function calculateDispatchedHolds() {
+    const holds = new Map();
+    orders
+        .filter(order => (order.status || "New") === "Dispatched")
+        .forEach(order => {
+            order.items.forEach(item => {
+                const key = stockKeyForGodown(order.godownLocation, item.product, item.color || "");
+                holds.set(key, (holds.get(key) || 0) + (Number.parseInt(item.qty, 10) || 0));
+            });
+        });
+    return holds;
+}
+
+function getStockQty(godown, product, color) {
+    const row = stocks.find(stock =>
+        stock.godown_location === godown &&
+        stock.product === product &&
+        (stock.color || "") === (color || "")
+    );
+    return Number.parseInt(row?.quantity, 10) || 0;
+}
+
+function stockKeyForGodown(godown, product, color = "") {
+    return `${godown}__${stockKey(product, color)}`;
+}
+
+window.updateStockQuantity = async function(godown, product, color, value) {
+    const quantity = Math.max(0, Number.parseInt(value, 10) || 0);
+    const previousStocks = [...stocks];
+    const existing = stocks.find(stock =>
+        stock.godown_location === godown &&
+        stock.product === product &&
+        (stock.color || "") === (color || "")
+    );
+
+    if (existing) {
+        existing.quantity = quantity;
+    } else {
+        stocks.push({ godown_location: godown, product, color, quantity });
+    }
+    renderStockTable();
+
+    try {
+        await requireSession();
+        const { error } = await supabaseClient
+            .from("godown_stocks")
+            .upsert({
+                godown_location: godown,
+                product,
+                color: color || "",
+                quantity
+            }, { onConflict: "godown_location,product,color" });
+        if (error) throw error;
+        showToast("Stock updated.");
+    } catch (error) {
+        stocks = previousStocks;
+        renderStockTable();
+        showToast("Stock was not saved in Supabase.", true);
+    }
+};
 
 window.updateOrderStatus = async function(orderId, status) {
     const order = orders.find(entry => entry.id === orderId);
@@ -565,6 +763,8 @@ window.updateOrderStatus = async function(orderId, status) {
             .eq("id", orderId);
         if (error) throw error;
         showToast("Status updated.");
+        renderOrdersTable();
+        renderStockTable();
     } catch (error) {
         order.status = previousStatus;
         renderOrdersTable();
@@ -587,6 +787,7 @@ window.deleteOrder = async function(orderId) {
             .delete()
             .eq("id", orderId);
         if (error) throw error;
+        renderStockTable();
         showToast("Order deleted.");
     } catch (error) {
         orders = previousOrders;
@@ -603,8 +804,10 @@ window.logout = async function() {
         // If the session already expired, still return to the login screen.
     }
     orders = [];
+    stocks = [];
     updateDashboard();
     renderOrdersTable();
+    renderStockTable();
     showLogin();
     showToast("Logged out.");
 };
@@ -725,6 +928,10 @@ function formatDate(date) {
 
 function csvCell(value) {
     return `"${String(value ?? "").replaceAll('"', '""').replaceAll("\n", " ")}"`;
+}
+
+function jsString(value) {
+    return String(value ?? "").replaceAll("\\", "\\\\").replaceAll("'", "\\'");
 }
 
 function showToast(message, isError = false) {
