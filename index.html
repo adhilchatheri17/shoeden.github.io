@@ -35,7 +35,11 @@
     </section>
 
     <div id="app" class="auth-hidden">
-        <aside class="sidebar">
+        <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+        <aside id="sidebar" class="sidebar">
             <div class="brand-block">
                 <img src="assets/shoeden-logo.png" alt="ShoeDen logo" class="brand-logo">
                 <div>
@@ -72,6 +76,29 @@
                 <strong>Chennai, Erode, Kallakurichi, Madurai, Kanyakumari</strong>
             </div>
         </aside>
+
+        <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+            <button class="mobile-nav-btn active" data-target="dashboard">
+                <i class="fa-solid fa-chart-column"></i>
+                <span>Dashboard</span>
+            </button>
+            <button class="mobile-nav-btn" data-target="new-order">
+                <i class="fa-solid fa-square-plus"></i>
+                <span>New Order</span>
+            </button>
+            <button class="mobile-nav-btn" data-target="orders-list">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Orders</span>
+            </button>
+            <button class="mobile-nav-btn" data-target="stock">
+                <i class="fa-solid fa-warehouse"></i>
+                <span>Stock</span>
+            </button>
+            <button class="mobile-nav-btn" data-target="catalog">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Catalog</span>
+            </button>
+        </nav>
 
         <main class="main-content">
             <header class="top-bar">
@@ -182,6 +209,11 @@
                                         <label for="customerPhone">Phone</label>
                                         <input type="text" id="customerPhone" placeholder="Mobile number">
                                     </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="orderDate">Order Date *</label>
+                                    <input type="date" id="orderDate" required>
                                 </div>
 
                                 <div class="form-group">

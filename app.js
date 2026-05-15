@@ -109,9 +109,11 @@ document.addEventListener("DOMContentLoaded", () => {
     setupLogin();
     setupControls();
     setupNavigation();
+    setupMobileNav();
     setupOrderForm();
     renderCatalog();
     addNewItem();
+    setDefaultOrderDate();
     checkLogin();
 });
 
@@ -297,23 +299,73 @@ async function loadAppData() {
 function setupNavigation() {
     navItems.forEach(item => {
         item.addEventListener("click", () => {
-            navItems.forEach(nav => nav.classList.remove("active"));
-            item.classList.add("active");
-
-            const targetId = item.dataset.target;
-            views.forEach(view => {
-                view.classList.toggle("active", view.id === targetId);
-                view.classList.toggle("hide", view.id !== targetId);
-            });
-
-            pageTitle.textContent = navConfig[targetId].title;
-            pageSubtitle.textContent = navConfig[targetId].subtitle;
-
-            if (targetId === "dashboard") updateDashboard();
-            if (targetId === "orders-list") renderOrdersTable();
-            if (targetId === "stock") renderStockTable();
+            navigateTo(item.dataset.target);
         });
     });
+}
+
+function setupMobileNav() {
+    const mobileToggle = document.getElementById("mobile-menu-toggle");
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebar-overlay");
+    const mobileNavBtns = document.querySelectorAll(".mobile-nav-btn");
+
+    if (mobileToggle) {
+        mobileToggle.addEventListener("click", () => {
+            sidebar.classList.toggle("open");
+            overlay.classList.toggle("show");
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener("click", () => {
+            sidebar.classList.remove("open");
+            overlay.classList.remove("show");
+        });
+    }
+
+    // Close sidebar when a nav item is clicked on mobile
+    navItems.forEach(item => {
+        item.addEventListener("click", () => {
+            sidebar.classList.remove("open");
+            overlay.classList.remove("show");
+        });
+    });
+
+    mobileNavBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            navigateTo(btn.dataset.target);
+        });
+    });
+}
+
+function navigateTo(targetId) {
+    // Update sidebar nav
+    navItems.forEach(nav => nav.classList.remove("active"));
+    const sidebarItem = document.querySelector(`.nav-item[data-target="${targetId}"]`);
+    if (sidebarItem) sidebarItem.classList.add("active");
+
+    // Update mobile bottom nav
+    document.querySelectorAll(".mobile-nav-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.target === targetId);
+    });
+
+    // Switch views
+    views.forEach(view => {
+        view.classList.toggle("active", view.id === targetId);
+        view.classList.toggle("hide", view.id !== targetId);
+    });
+
+    pageTitle.textContent = navConfig[targetId].title;
+    pageSubtitle.textContent = navConfig[targetId].subtitle;
+
+    if (targetId === "dashboard") updateDashboard();
+    if (targetId === "orders-list") renderOrdersTable();
+    if (targetId === "stock") renderStockTable();
+
+    // Close mobile sidebar
+    document.getElementById("sidebar")?.classList.remove("open");
+    document.getElementById("sidebar-overlay")?.classList.remove("show");
 }
 
 function setupOrderForm() {
@@ -400,17 +452,18 @@ async function saveNewOrder() {
     const customerName = document.getElementById("customerName").value.trim();
     const customerPhone = document.getElementById("customerPhone").value.trim();
     const deliveryArea = document.getElementById("deliveryArea").value.trim();
+    const orderDate = document.getElementById("orderDate").value;
     const notes = document.getElementById("orderNotes").value.trim();
     const items = collectItems();
 
-    if (!godownLocation || !agentName || !items.length) {
-        showToast("Fill godown, agent, product, color, and quantity.", true);
+    if (!godownLocation || !agentName || !items.length || !orderDate) {
+        showToast("Fill godown, agent, date, product, color, and quantity.", true);
         return;
     }
 
     const newOrder = {
         id: createOrderId(godownLocation),
-        date: new Date().toISOString(),
+        date: new Date(orderDate).toISOString(),
         agentName,
         customerName,
         customerPhone,
@@ -434,6 +487,7 @@ async function saveNewOrder() {
         const savedOrder = fromDbOrder(data);
         orders.unshift(savedOrder);
         orderForm.reset();
+        setDefaultOrderDate();
         itemsContainer.innerHTML = "";
         addNewItem();
         updateDashboard();
@@ -979,4 +1033,15 @@ function showToast(message, isError = false) {
     toast.classList.add("show");
     clearTimeout(showToast.timeout);
     showToast.timeout = setTimeout(() => toast.classList.remove("show"), 3000);
+}
+
+function setDefaultOrderDate() {
+    const dateInput = document.getElementById("orderDate");
+    if (dateInput) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        dateInput.value = `${yyyy}-${mm}-${dd}`;
+    }
 }
