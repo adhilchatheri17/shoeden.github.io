@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShoeDen Operations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <section id="login-screen" class="login-screen">
+        <form id="loginForm" class="login-card">
+            <img src="assets/shoeden-logo.png" alt="ShoeDen logo" class="login-logo">
+            <div class="login-heading">
+                <p class="eyebrow">ShoeDen secure access</p>
+                <h1>Login</h1>
+            </div>
+            <div class="form-group">
+                <label for="loginUsername">Username</label>
+                <input type="text" id="loginUsername" autocomplete="username" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-full">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>Login</span>
+            </button>
+            <p class="login-help">Default: admin / shoeden123</p>
+        </form>
+    </section>
+
+    <div id="app" class="auth-hidden">
+        <aside class="sidebar">
+            <div class="brand-block">
+                <img src="assets/shoeden-logo.png" alt="ShoeDen logo" class="brand-logo">
+                <div>
+                    <h2>ShoeDen</h2>
+                    <p>Order desk</p>
+                </div>
+            </div>
+
+            <nav class="nav-menu" aria-label="Main navigation">
+                <button class="nav-item active" data-target="dashboard">
+                    <i class="fa-solid fa-chart-column"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-target="new-order">
+                    <i class="fa-solid fa-square-plus"></i>
+                    <span>New Order</span>
+                </button>
+                <button class="nav-item" data-target="orders-list">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Orders</span>
+                </button>
+                <button class="nav-item" data-target="catalog">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>Catalog</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-note">
+                <span>5 godowns</span>
+                <strong>Chennai, Erode, Kallakurichi, Madurai, Kanyakumari</strong>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="page-title">
+                    <p class="eyebrow">ShoeDen operations</p>
+                    <h1 id="current-page-title">Dashboard</h1>
+                    <p id="current-page-subtitle">Live overview of godown orders and dispatch status.</p>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="logout()" title="Logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Logout</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportData()" title="Export CSV">
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                        <span>Export CSV</span>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <section id="dashboard" class="view-section active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-icon"><i class="fa-solid fa-receipt"></i></span>
+                            <div>
+                                <p>Total Orders</p>
+                                <strong id="stat-total-orders">0</strong>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-icon"><i class="fa-solid fa-cubes"></i></span>
+                            <div>
+                                <p>Total Quantity</p>
+                                <strong id="stat-items-sold">0</strong>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-icon"><i class="fa-solid fa-truck-fast"></i></span>
+                            <div>
+                                <p>Pending Dispatch</p>
+                                <strong id="stat-pending">0</strong>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-icon"><i class="fa-solid fa-warehouse"></i></span>
+                            <div>
+                                <p>Godowns</p>
+                                <strong>5</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="panel">
+                            <div class="panel-heading">
+                                <h3>Orders by Godown</h3>
+                                <span>WhatsApp group wise</span>
+                            </div>
+                            <div class="godown-bars" id="godown-stats-container"></div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-heading">
+                                <h3>Status Board</h3>
+                                <span>New to delivered</span>
+                            </div>
+                            <div class="status-grid" id="status-stats-container"></div>
+                        </div>
+                    </div>
+
+                    <div class="panel recent-panel">
+                        <div class="panel-heading">
+                            <h3>Recent Orders</h3>
+                            <span>Latest entries from agents</span>
+                        </div>
+                        <div class="recent-list" id="recent-orders-list"></div>
+                    </div>
+                </section>
+
+                <section id="new-order" class="view-section hide">
+                    <form id="orderForm" class="order-form">
+                        <div class="form-grid">
+                            <div class="panel">
+                                <div class="panel-heading">
+                                    <h3>Order Details</h3>
+                                    <span>From WhatsApp group</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="godownLocation">Godown Group *</label>
+                                    <select id="godownLocation" required>
+                                        <option value="" disabled selected>Select godown group</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="agentName">Agent Name *</label>
+                                    <input type="text" id="agentName" placeholder="Agent name" required>
+                                </div>
+
+                                <div class="two-col">
+                                    <div class="form-group">
+                                        <label for="customerName">Customer Name</label>
+                                        <input type="text" id="customerName" placeholder="Customer name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="customerPhone">Phone</label>
+                                        <input type="text" id="customerPhone" placeholder="Mobile number">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="deliveryArea">Delivery Area</label>
+                                    <input type="text" id="deliveryArea" placeholder="Area / town / landmark">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="orderNotes">Notes</label>
+                                    <textarea id="orderNotes" rows="4" placeholder="Payment, transport, address, or packing notes"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="panel">
+                                <div class="panel-heading row">
+                                    <div>
+                                        <h3>Products</h3>
+                                        <span>Only valid colors are shown</span>
+                                    </div>
+                                    <button type="button" class="btn btn-compact btn-secondary" id="add-item-btn" title="Add item">
+                                        <i class="fa-solid fa-plus"></i>
+                                        <span>Add Item</span>
+                                    </button>
+                                </div>
+
+                                <div id="order-items-container" class="order-items"></div>
+
+                                <div class="summary-strip">
+                                    <span>Total quantity</span>
+                                    <strong id="form-total-qty">0</strong>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-full">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    <span>Save Order</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <section id="orders-list" class="view-section hide">
+                    <div class="panel">
+                        <div class="table-controls">
+                            <div class="search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="search-orders" placeholder="Search ID, agent, customer, phone, area">
+                            </div>
+                            <select id="filter-godown"></select>
+                            <select id="filter-status"></select>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order</th>
+                                        <th>Godown</th>
+                                        <th>Agent / Customer</th>
+                                        <th>Items</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orders-table-body"></tbody>
+                            </table>
+                            <div id="no-orders-message" class="empty-state hide">
+                                <i class="fa-solid fa-folder-open"></i>
+                                <h3>No orders found</h3>
+                                <p>Try another search or add a new order.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="catalog" class="view-section hide">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h3>Product Catalog</h3>
+                            <span>Rules used by the order form</span>
+                        </div>
+                        <div class="catalog-grid" id="catalog-grid"></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="toast">
+        <i class="fa-solid fa-circle-check"></i>
+        <span class="toast-message">Saved</span>
+    </div>
+
+    <template id="item-template">
+        <div class="item-card">
+            <button type="button" class="icon-button remove-item-btn" title="Remove item">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="form-group">
+                <label>Product *</label>
+                <select class="product-select" required>
+                    <option value="" disabled selected>Select product</option>
+                </select>
+            </div>
+            <div class="item-row">
+                <div class="form-group color-group hide">
+                    <label>Color *</label>
+                    <select class="color-select" disabled></select>
+                </div>
+                <div class="form-group qty-group">
+                    <label>Qty *</label>
+                    <input type="number" class="qty-input" min="1" value="1" required>
+                </div>
+            </div>
+            <p class="item-hint"></p>
+        </div>
+    </template>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
