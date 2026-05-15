@@ -721,7 +721,10 @@ function renderStockTable() {
         </tr>
     `;
 
-    body.innerHTML = STOCK_VARIANTS.map(variant => {
+    const rackProducts = STOCK_VARIANTS.filter(v => v.category === "Shoe Rack");
+    const tableProducts = STOCK_VARIANTS.filter(v => v.category === "Table");
+
+    function renderProductRow(variant) {
         let totalAvailable = 0;
         const godownCells = GODOWNS.map(godown => {
             const stockQty = getStockQty(godown.id, variant.product, variant.color);
@@ -756,13 +759,47 @@ function renderStockTable() {
             <tr>
                 <td class="stock-product">
                     <strong>${variant.label}</strong>
-                    <span>Total count / ${variant.category}</span>
+                    <span>${variant.category}</span>
                 </td>
                 ${godownCells}
                 <td><strong class="${totalAvailable < 0 ? "negative" : totalAvailable <= 10 ? "low" : ""}">${totalAvailable}</strong></td>
             </tr>
         `;
-    }).join("");
+    }
+
+    function renderSubtotalRow(label, variants) {
+        let grandTotal = 0;
+        const godownCells = GODOWNS.map(godown => {
+            let subtotal = 0;
+            variants.forEach(variant => {
+                const stockQty = getStockQty(godown.id, variant.product, variant.color);
+                const key = stockKeyForGodown(godown.id, variant.product, variant.color);
+                const holdQty = stockData.holds.get(key) || 0;
+                const delivQty = stockData.delivered.get(key) || 0;
+                subtotal += stockQty - holdQty - delivQty;
+            });
+            grandTotal += subtotal;
+            const cls = subtotal < 0 ? "negative" : subtotal <= 5 ? "low" : "";
+            return `<td class="stock-subtotal-cell"><strong class="${cls}">${subtotal}</strong></td>`;
+        }).join("");
+
+        const grandCls = grandTotal < 0 ? "negative" : grandTotal <= 10 ? "low" : "";
+        return `
+            <tr class="stock-subtotal-row">
+                <td class="stock-product stock-subtotal-cell"><strong>${label}</strong></td>
+                ${godownCells}
+                <td class="stock-subtotal-cell"><strong class="${grandCls}">${grandTotal}</strong></td>
+            </tr>
+        `;
+    }
+
+    let rows = "";
+    rows += rackProducts.map(renderProductRow).join("");
+    rows += renderSubtotalRow("All Racks Total", rackProducts);
+    rows += tableProducts.map(renderProductRow).join("");
+    rows += renderSubtotalRow("All Tables Total", tableProducts);
+
+    body.innerHTML = rows;
 }
 
 function calculateStockMetrics() {

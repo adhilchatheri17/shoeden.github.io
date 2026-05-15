@@ -898,6 +898,27 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   color: var(--muted);
 }
 
+.stock-subtotal-row {
+  background: var(--panel-soft);
+}
+
+.stock-subtotal-row td {
+  border-top: 2px solid var(--line-strong);
+}
+
+.stock-subtotal-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.stock-subtotal-cell strong {
+  font-size: 1.1rem;
+}
+
+.stock-subtotal-row .stock-product {
+  background: var(--panel-soft);
+}
+
 .stock-cell {
   display: grid;
   gap: 8px;
