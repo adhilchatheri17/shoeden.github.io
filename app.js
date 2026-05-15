@@ -52,7 +52,7 @@ const GODOWNS = [
 ];
 
 const STOCK_VARIANTS = buildStockVariants();
-const STATUSES = ["New", "Packed", "Dispatched", "Delivered"];
+const STATUSES = ["New", "Packed", "Dispatched", "Delivered", "Returned"];
 const ACTIVE_STATUSES = ["New", "Packed", "Dispatched"];
 const SUPABASE_CONFIG = window.SHOEDEN_SUPABASE || {};
 const SUPABASE_IS_CONFIGURED = Boolean(
@@ -67,6 +67,7 @@ const supabaseClient = SUPABASE_IS_CONFIGURED
 
 let orders = [];
 let stocks = [];
+let currentOrdersGodown = "All";
 
 const navItems = document.querySelectorAll(".nav-item");
 const views = document.querySelectorAll(".view-section");
@@ -194,40 +195,57 @@ async function requireSession() {
 
 function setupControls() {
     const godownSelect = document.getElementById("godownLocation");
-    const filterGodown = document.getElementById("filter-godown");
-    const filterStatus = document.getElementById("filter-status");
+    
+    // Status filter is no longer needed since we have visual columns
+    // We can remove it or keep it hidden if the column layout handles it all
+    // Wait, the column layout makes status filter redundant.
 
     godownSelect.innerHTML = '<option value="" disabled selected>Select godown group</option>';
-    filterGodown.innerHTML = '<option value="All">All Godowns</option>';
 
     GODOWNS.forEach(godown => {
         godownSelect.insertAdjacentHTML(
             "beforeend",
             `<option value="${godown.id}">${godown.label} - ${godown.group}</option>`
         );
-        filterGodown.insertAdjacentHTML("beforeend", `<option value="${godown.id}">${godown.label}</option>`);
     });
 
-    filterStatus.innerHTML = '<option value="All">All Status</option>';
-    STATUSES.forEach(status => {
-        filterStatus.insertAdjacentHTML("beforeend", `<option value="${status}">${status}</option>`);
-    });
+    renderGodownTabs();
 
     document.getElementById("search-orders").addEventListener("input", renderOrdersTable);
-    filterGodown.addEventListener("change", renderOrdersTable);
-    filterStatus.addEventListener("change", renderOrdersTable);
+}
+
+function renderGodownTabs() {
+    const container = document.getElementById("godown-tabs-container");
+    if (!container) return;
+    
+    container.innerHTML = `<button class="godown-tab ${currentOrdersGodown === "All" ? "active" : ""}" data-godown="All">All Godowns</button>`;
+    
+    GODOWNS.forEach(godown => {
+        container.insertAdjacentHTML("beforeend", `
+            <button class="godown-tab ${currentOrdersGodown === godown.id ? "active" : ""}" data-godown="${godown.id}">
+                ${godown.label}
+            </button>
+        `);
+    });
+
+    container.querySelectorAll(".godown-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+            currentOrdersGodown = tab.dataset.godown;
+            renderGodownTabs(); // Update active class
+            renderOrdersTable();
+        });
+    });
 }
 
 function buildStockVariants() {
-    return Object.entries(INVENTORY_CONFIG).flatMap(([productKey, product]) => {
-        const colors = product.colors.length ? product.colors : [""];
-        return colors.map(color => ({
-            key: stockKey(productKey, color),
+    return Object.entries(INVENTORY_CONFIG).map(([productKey, product]) => {
+        return {
+            key: stockKey(productKey, ""),
             product: productKey,
-            color,
+            color: "",
             label: product.name,
             category: product.category
-        }));
+        };
     });
 }
 
@@ -544,8 +562,6 @@ function renderOrdersTable() {
     if (!board || !noOrders) return;
 
     const search = document.getElementById("search-orders").value.toLowerCase();
-    const godownFilter = document.getElementById("filter-godown").value;
-    const statusFilter = document.getElementById("filter-status").value;
     let matches = 0;
 
     board.innerHTML = "";
@@ -560,21 +576,23 @@ function renderOrdersTable() {
             order.godownLocation,
             order.whatsappGroup
         ].join(" ").toLowerCase();
-        const status = order.status || "New";
         return searchText.includes(search) &&
-            (godownFilter === "All" || order.godownLocation === godownFilter) &&
-            (statusFilter === "All" || status === statusFilter);
+            (currentOrdersGodown === "All" || order.godownLocation === currentOrdersGodown);
     });
 
     GODOWNS.forEach(godown => {
         const godownOrders = filteredOrders.filter(order => order.godownLocation === godown.id);
-        if (!godownOrders.length && godownFilter !== godown.id) return;
+        if (!godownOrders.length && currentOrdersGodown !== godown.id) return;
         matches += godownOrders.length;
 
-        const statusColumns = [...ACTIVE_STATUSES, "Delivered"].map(status => {
+        const statusColumns = [...ACTIVE_STATUSES, "Delivered", "Returned"].map(status => {
             const statusOrders = godownOrders.filter(order => (order.status || "New") === status);
+            let extClass = "";
+            if (status === "Delivered") extClass = "delivered-column";
+            if (status === "Returned") extClass = "returned-column";
+            
             return `
-                <div class="order-column ${status === "Delivered" ? "delivered-column" : ""}">
+                <div class="order-column ${extClass}">
                     <div class="order-column-title">
                         <span>${status}</span>
                         <b>${statusOrders.length}</b>
@@ -636,7 +654,7 @@ function renderStockTable() {
     const body = document.getElementById("stock-table-body");
     if (!head || !body) return;
 
-    const holds = calculateDispatchedHolds();
+    const stockData = calculateStockMetrics();
 
     head.innerHTML = `
         <tr>
@@ -650,8 +668,10 @@ function renderStockTable() {
         let totalAvailable = 0;
         const godownCells = GODOWNS.map(godown => {
             const stockQty = getStockQty(godown.id, variant.product, variant.color);
-            const holdQty = holds.get(stockKeyForGodown(godown.id, variant.product, variant.color)) || 0;
-            const available = stockQty - holdQty;
+            const key = stockKeyForGodown(godown.id, variant.product, variant.color);
+            const holdQty = stockData.holds.get(key) || 0;
+            const delivQty = stockData.delivered.get(key) || 0;
+            const available = stockQty - holdQty - delivQty;
             totalAvailable += available;
             const availableClass = available < 0 ? "negative" : available <= 3 ? "low" : "";
 
@@ -667,6 +687,7 @@ function renderStockTable() {
                         >
                         <div class="stock-metrics">
                             <span>Hold <b>${holdQty}</b></span>
+                            <span>Deliv <b>${delivQty}</b></span>
                             <span>Avail <b class="${availableClass}">${available}</b></span>
                         </div>
                     </div>
@@ -678,7 +699,7 @@ function renderStockTable() {
             <tr>
                 <td class="stock-product">
                     <strong>${variant.label}</strong>
-                    <span>${variant.color || "No color"} / ${variant.category}</span>
+                    <span>Total count / ${variant.category}</span>
                 </td>
                 ${godownCells}
                 <td><strong class="${totalAvailable < 0 ? "negative" : totalAvailable <= 10 ? "low" : ""}">${totalAvailable}</strong></td>
@@ -687,26 +708,37 @@ function renderStockTable() {
     }).join("");
 }
 
-function calculateDispatchedHolds() {
+function calculateStockMetrics() {
     const holds = new Map();
-    orders
-        .filter(order => (order.status || "New") === "Dispatched")
-        .forEach(order => {
+    const delivered = new Map();
+
+    orders.forEach(order => {
+        const status = order.status || "New";
+        
+        if (ACTIVE_STATUSES.includes(status)) {
             order.items.forEach(item => {
-                const key = stockKeyForGodown(order.godownLocation, item.product, item.color || "");
+                const key = stockKeyForGodown(order.godownLocation, item.product, "");
                 holds.set(key, (holds.get(key) || 0) + (Number.parseInt(item.qty, 10) || 0));
             });
-        });
-    return holds;
+        } else if (status === "Delivered") {
+            order.items.forEach(item => {
+                const key = stockKeyForGodown(order.godownLocation, item.product, "");
+                delivered.set(key, (delivered.get(key) || 0) + (Number.parseInt(item.qty, 10) || 0));
+            });
+        }
+    });
+
+    return { holds, delivered };
 }
 
 function getStockQty(godown, product, color) {
-    const row = stocks.find(stock =>
-        stock.godown_location === godown &&
-        stock.product === product &&
-        (stock.color || "") === (color || "")
-    );
-    return Number.parseInt(row?.quantity, 10) || 0;
+    let sum = 0;
+    stocks.forEach(stock => {
+        if (stock.godown_location === godown && stock.product === product) {
+            sum += Number.parseInt(stock.quantity, 10) || 0;
+        }
+    });
+    return sum;
 }
 
 function stockKeyForGodown(godown, product, color = "") {
@@ -716,29 +748,33 @@ function stockKeyForGodown(godown, product, color = "") {
 window.updateStockQuantity = async function(godown, product, color, value) {
     const quantity = Math.max(0, Number.parseInt(value, 10) || 0);
     const previousStocks = [...stocks];
-    const existing = stocks.find(stock =>
-        stock.godown_location === godown &&
-        stock.product === product &&
-        (stock.color || "") === (color || "")
-    );
-
-    if (existing) {
-        existing.quantity = quantity;
-    } else {
-        stocks.push({ godown_location: godown, product, color, quantity });
-    }
+    
+    // Remove all old entries for this product (cleaning up color variants)
+    stocks = stocks.filter(s => !(s.godown_location === godown && s.product === product));
+    // Add single consolidated row
+    stocks.push({ godown_location: godown, product, color: "", quantity });
+    
     renderStockTable();
 
     try {
         await requireSession();
+        // Delete previous variants first to avoid duplicates or orphaned sums
+        await supabaseClient
+            .from("godown_stocks")
+            .delete()
+            .eq("godown_location", godown)
+            .eq("product", product);
+
+        // Insert new single consolidated variant
         const { error } = await supabaseClient
             .from("godown_stocks")
-            .upsert({
+            .insert({
                 godown_location: godown,
                 product,
-                color: color || "",
+                color: "",
                 quantity
-            }, { onConflict: "godown_location,product,color" });
+            });
+        
         if (error) throw error;
         showToast("Stock updated.");
     } catch (error) {

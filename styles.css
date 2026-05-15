@@ -611,9 +611,6 @@ select:focus {
 }
 
 .table-controls {
-  display: grid;
-  grid-template-columns: minmax(280px, 1fr) 190px 170px;
-  gap: 12px;
   margin-bottom: 16px;
 }
 
@@ -631,6 +628,36 @@ select:focus {
 
 .search-box input {
   padding-left: 38px;
+}
+
+.godown-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.godown-tab {
+  background: var(--black);
+  border: 1px solid var(--line-strong);
+  color: var(--muted-2);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.godown-tab:hover {
+  background: #252525;
+  color: var(--white);
+}
+
+.godown-tab.active {
+  background: var(--white);
+  color: var(--black);
+  border-color: var(--white);
 }
 
 .orders-board {
@@ -666,7 +693,7 @@ select:focus {
 
 .order-columns {
   display: grid;
-  grid-template-columns: repeat(4, minmax(230px, 1fr));
+  grid-template-columns: repeat(5, minmax(230px, 1fr));
   gap: 12px;
   overflow-x: auto;
 }
@@ -680,8 +707,13 @@ select:focus {
 }
 
 .delivered-column {
-  background: #181818;
-  border-color: var(--line-strong);
+  background: #121812;
+  border-color: #2e4a2e;
+}
+
+.returned-column {
+  background: #181212;
+  border-color: #4a2e2e;
 }
 
 .order-column-title {
