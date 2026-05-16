@@ -702,9 +702,10 @@ function renderOrderCard(order) {
                 <input type="date" class="order-date-input" value="${dateVal}" onchange="updateOrderDate('${order.id}', this.value)" title="Change order date">
             </div>
             
-            ${order.customerName || order.deliveryArea ? `
+            ${order.customerName || order.deliveryArea || order.customerPhone ? `
             <div class="order-card-details">
                 ${order.customerName ? `<div><i class="fa-solid fa-user"></i> ${order.customerName}</div>` : ''}
+                ${order.customerPhone ? `<div><i class="fa-solid fa-phone"></i> ${order.customerPhone}</div>` : ''}
                 ${order.deliveryArea ? `<div><i class="fa-solid fa-location-dot"></i> ${order.deliveryArea}</div>` : ''}
             </div>` : ''}
             
