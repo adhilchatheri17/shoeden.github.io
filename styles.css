@@ -32,7 +32,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: var(--black);
+  background: var(--white);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -88,6 +88,7 @@ body {
   margin: 0 auto 18px;
   border: none;
   border-radius: var(--radius);
+  filter: invert(1);
 }
 
 .login-heading {
@@ -269,6 +270,7 @@ td span,
   height: 38px;
   width: auto;
   border-radius: 6px;
+  filter: invert(1);
 }
 
 .page-title h1 {
