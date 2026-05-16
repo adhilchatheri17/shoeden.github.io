@@ -680,29 +680,41 @@ function renderOrdersTable() {
 function renderOrderCard(order) {
     const status = order.status || "New";
     const dateVal = toDateInputValue(order.date);
+    
+    const phone = order.customerPhone || "";
+    const lastFive = phone.length >= 5 ? phone.slice(-5) : phone;
+    const title = `${order.agentName}${lastFive ? ' \u2014 ' + lastFive : ''}`;
+    
+    const searchString = `${order.notes || ""} ${order.agentName} ${order.customerName || ""}`.toLowerCase();
+    const isInfluencer = searchString.includes("youtube") || searchString.includes("influencer") || searchString.includes("promo");
+
     return `
-        <article class="order-card">
+        <article class="order-card ${isInfluencer ? 'influencer-card' : ''}">
             <div class="order-card-top">
-                <strong>${order.id}</strong>
+                <strong class="order-card-title">${title}</strong>
                 <button class="icon-button danger" onclick="deleteOrder('${order.id}')" title="Delete order">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </div>
+            ${isInfluencer ? '<div class="influencer-badge"><i class="fa-brands fa-youtube"></i> VIP / Influencer</div>' : ''}
+            
             <div class="order-card-date">
                 <input type="date" class="order-date-input" value="${dateVal}" onchange="updateOrderDate('${order.id}', this.value)" title="Change order date">
             </div>
-            <div class="order-card-line">
-                <b>Agent</b>
-                <span>${order.agentName}</span>
-            </div>
-            <div class="order-card-line">
-                <b>Customer</b>
-                <span>${customerLine(order)}</span>
-            </div>
+            
+            ${order.customerName || order.deliveryArea ? `
+            <div class="order-card-details">
+                ${order.customerName ? `<div><i class="fa-solid fa-user"></i> ${order.customerName}</div>` : ''}
+                ${order.deliveryArea ? `<div><i class="fa-solid fa-location-dot"></i> ${order.deliveryArea}</div>` : ''}
+            </div>` : ''}
+            
             <div class="items-cell">${formatItems(order.items)}</div>
-            <select class="status-select" onchange="updateOrderStatus('${order.id}', this.value)">
-                ${STATUSES.map(value => `<option value="${value}" ${value === status ? "selected" : ""}>${value}</option>`).join("")}
-            </select>
+            
+            <div class="order-status-row">
+                <select class="status-select" onchange="updateOrderStatus('${order.id}', this.value)">
+                    ${STATUSES.map(value => `<option value="${value}" ${value === status ? "selected" : ""}>${value}</option>`).join("")}
+                </select>
+            </div>
         </article>
     `;
 }
@@ -1095,8 +1107,8 @@ function toDbOrder(order) {
 function formatItems(items) {
     return items.map(item => {
         const product = INVENTORY_CONFIG[item.product];
-        const color = item.color ? `, ${item.color}` : "";
-        return `<div><strong>${item.qty}x</strong> ${product?.name || item.product}${color}</div>`;
+        const colorHtml = item.color ? `<span class="highlight-color"><i class="fa-solid fa-palette"></i> ${item.color}</span>` : "";
+        return `<div class="item-ordered"><strong class="highlight-qty">${item.qty}x</strong> <span class="highlight-product">${product?.name || item.product}</span> ${colorHtml}</div>`;
     }).join("");
 }
 

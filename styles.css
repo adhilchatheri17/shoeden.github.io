@@ -807,27 +807,93 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   background: rgba(255, 255, 255, 0.08);
 }
 
-.order-card-line {
-  display: grid;
-  gap: 3px;
-  margin-bottom: 9px;
+.influencer-card {
+  border: 1px solid #ff4b4b;
+  background: linear-gradient(145deg, #180909, #131313);
+  position: relative;
+  box-shadow: 0 4px 15px rgba(255, 75, 75, 0.15);
 }
 
-.order-card-line b {
-  color: var(--muted);
-  font-size: 0.72rem;
+.influencer-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #ff4b4b;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
   text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
 }
 
-.order-card-line span {
+.influencer-badge i {
+  margin-right: 5px;
+}
+
+.order-card-title {
+  font-size: 1.05rem;
+  color: var(--white);
+  font-weight: 800;
+  word-break: break-word;
+}
+
+.order-card-details {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
   color: var(--muted-2);
-  font-size: 0.86rem;
+}
+
+.order-card-details i {
+  color: var(--muted);
+  width: 18px;
+  text-align: center;
+}
+
+.item-ordered {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.item-ordered:last-child {
+  border-bottom: none;
+}
+
+.highlight-qty {
+  color: var(--muted);
+  margin-right: 6px;
+}
+
+.highlight-product {
+  color: var(--white);
+  font-weight: 600;
+}
+
+.highlight-color {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffd700;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  margin-left: auto;
+}
+
+.order-status-row {
+  margin-top: 14px;
 }
 
 .order-card .items-cell {
   min-width: 0;
   margin: 10px 0;
-  padding-top: 10px;
+  padding-top: 4px;
   border-top: 1px solid var(--line);
 }
 
@@ -1267,15 +1333,15 @@ td span {
 
   .top-bar {
     position: relative;
-    padding: 16px 16px 16px 64px;
-    flex-direction: column;
-    align-items: stretch;
-    min-height: auto;
-    gap: 12px;
+    padding: 12px 14px 12px 64px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 64px;
   }
 
   .actions {
-    justify-content: flex-start;
+    gap: 8px;
   }
 
   .actions .btn span {
@@ -1283,20 +1349,19 @@ td span {
   }
 
   .actions .btn {
-    min-height: 40px;
-    padding: 0 12px;
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 1rem;
   }
 
   .page-title h1 {
-    font-size: 1.4rem;
+    font-size: 1.15rem;
+    margin: 0;
   }
 
-  .page-title .eyebrow {
-    font-size: 0.65rem;
-  }
-
+  .page-title .eyebrow,
   #current-page-subtitle {
-    font-size: 0.8rem;
+    display: none;
   }
 
   .content-wrapper {
