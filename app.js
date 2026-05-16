@@ -115,6 +115,15 @@ document.addEventListener("DOMContentLoaded", () => {
     addNewItem();
     setDefaultOrderDate();
     checkLogin();
+
+    // Splash screen logic
+    setTimeout(() => {
+        const splash = document.getElementById("splash-screen");
+        if (splash) {
+            splash.classList.add("fade-out");
+            setTimeout(() => splash.remove(), 500);
+        }
+    }, 1600);
 });
 
 function setupLogin() {

@@ -27,6 +27,40 @@ body {
   font-family: Inter, Arial, sans-serif;
 }
 
+/* ── Splash Screen ── */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--black);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.splash-logo {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  border-radius: 20px;
+  background: var(--white);
+  padding: 10px;
+  animation: splashPop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
+}
+
+@keyframes splashPop {
+  0% { transform: scale(0.6); opacity: 0; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
 .login-screen {
   min-height: 100vh;
   display: grid;
