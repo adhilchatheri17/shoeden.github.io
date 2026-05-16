@@ -729,11 +729,13 @@ function renderStockTable() {
     function renderProductRow(variant) {
         let totalAvailable = 0;
         const godownCells = GODOWNS.map(godown => {
-            const stockQty = getStockQty(godown.id, variant.product, variant.color);
+            const baseStock = getStockQty(godown.id, variant.product, variant.color);
             const key = stockKeyForGodown(godown.id, variant.product, variant.color);
             const holdQty = stockData.holds.get(key) || 0;
             const delivQty = stockData.delivered.get(key) || 0;
-            const available = stockQty - holdQty - delivQty;
+            
+            const currentPhysicalStock = baseStock - delivQty;
+            const available = currentPhysicalStock - holdQty;
             totalAvailable += available;
             const availableClass = available < 0 ? "negative" : available <= 3 ? "low" : "";
 
@@ -742,8 +744,7 @@ function renderStockTable() {
                     <div class="stock-cell">
                         <input
                             type="number"
-                            min="0"
-                            value="${stockQty}"
+                            value="${currentPhysicalStock}"
                             onchange="updateStockQuantity('${jsString(godown.id)}', '${jsString(variant.product)}', '${jsString(variant.color)}', this.value)"
                             aria-label="${variant.label} ${variant.color || "stock"} ${godown.label}"
                         >
@@ -855,7 +856,14 @@ function stockKeyForGodown(godown, product, color = "") {
 }
 
 window.updateStockQuantity = async function(godown, product, color, value) {
-    const quantity = Math.max(0, Number.parseInt(value, 10) || 0);
+    const currentPhysical = Number.parseInt(value, 10) || 0;
+    
+    // Add back the delivered quantity to save as Base Stock internally
+    const metrics = calculateStockMetrics();
+    const key = stockKeyForGodown(godown, product, color);
+    const delivQty = metrics.delivered.get(key) || 0;
+    const quantity = currentPhysical + delivQty;
+
     const previousStocks = [...stocks];
     
     // Remove all old entries for this product (cleaning up color variants)
