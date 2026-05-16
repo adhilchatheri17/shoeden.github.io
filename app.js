@@ -486,18 +486,20 @@ async function saveNewOrder() {
 
         const savedOrder = fromDbOrder(data);
         orders.unshift(savedOrder);
-        orderForm.reset();
-        setDefaultOrderDate();
-        itemsContainer.innerHTML = "";
-        addNewItem();
-        updateDashboard();
-        renderOrdersTable();
-        renderStockTable();
         showToast("Order saved.");
-        document.querySelector('[data-target="dashboard"]').click();
     } catch (error) {
-        showToast("Order was not saved in Supabase.", true);
+        orders.unshift(newOrder); // Save locally as fallback
+        showToast("Order saved locally (Supabase not connected)", false);
     }
+
+    orderForm.reset();
+    setDefaultOrderDate();
+    itemsContainer.innerHTML = "";
+    addNewItem();
+    updateDashboard();
+    renderOrdersTable();
+    renderStockTable();
+    document.querySelector('[data-target="dashboard"]').click();
 }
 
 function collectItems() {
@@ -795,9 +797,22 @@ function renderStockTable() {
 
     let rows = "";
     rows += rackProducts.map(renderProductRow).join("");
-    rows += renderSubtotalRow("All Racks Total", rackProducts);
-    rows += tableProducts.map(renderProductRow).join("");
-    rows += renderSubtotalRow("All Tables Total", tableProducts);
+    // Only show rack subtotals if we actually have racks
+    if (rackProducts.length > 0) {
+        rows += renderSubtotalRow("All Racks Total", rackProducts);
+    }
+
+    const ironingTableProducts = tableProducts.filter(v => v.product === "Ironing Table");
+    rows += ironingTableProducts.map(renderProductRow).join("");
+    if (ironingTableProducts.length > 0) {
+        rows += renderSubtotalRow("Ironing Table Total", ironingTableProducts);
+    }
+
+    const studyTableProducts = tableProducts.filter(v => v.product === "Study Table");
+    rows += studyTableProducts.map(renderProductRow).join("");
+    if (studyTableProducts.length > 0) {
+        rows += renderSubtotalRow("Study Table Total", studyTableProducts);
+    }
 
     body.innerHTML = rows;
 }
@@ -872,9 +887,8 @@ window.updateStockQuantity = async function(godown, product, color, value) {
         if (error) throw error;
         showToast("Stock updated.");
     } catch (error) {
-        stocks = previousStocks;
-        renderStockTable();
-        showToast("Stock was not saved in Supabase.", true);
+        // Keep the local state for offline usage
+        showToast("Stock updated locally (Supabase offline)", false);
     }
 };
 
@@ -893,13 +907,8 @@ window.updateOrderStatus = async function(orderId, status) {
             .eq("id", orderId);
         if (error) throw error;
         showToast("Status updated.");
-        renderOrdersTable();
-        renderStockTable();
     } catch (error) {
-        order.status = previousStatus;
-        renderOrdersTable();
-        updateDashboard();
-        showToast("Status was not saved in Supabase.", true);
+        showToast("Status updated locally (Supabase offline)", false);
     }
 };
 
@@ -919,10 +928,7 @@ window.updateOrderDate = async function(orderId, newDateValue) {
         if (error) throw error;
         showToast("Date updated.");
     } catch (error) {
-        order.date = previousDate;
-        renderOrdersTable();
-        updateDashboard();
-        showToast("Date was not saved in Supabase.", true);
+        showToast("Date updated locally (Supabase offline)", false);
     }
 };
 
@@ -943,10 +949,7 @@ window.deleteOrder = async function(orderId) {
         renderStockTable();
         showToast("Order deleted.");
     } catch (error) {
-        orders = previousOrders;
-        renderOrdersTable();
-        updateDashboard();
-        showToast("Delete was not saved in Supabase.", true);
+        showToast("Order deleted locally (Supabase offline)", false);
     }
 };
 

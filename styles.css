@@ -1135,6 +1135,7 @@ td span {
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.25s ease;
 }
 
@@ -1164,17 +1165,17 @@ td span {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 6px 8px;
-  border-radius: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: color 0.2s, background 0.2s;
-  min-width: 56px;
+  transition: color 0.2s, background 0.2s, transform 0.2s;
+  min-width: 60px;
 }
 
 .mobile-nav-btn i {
@@ -1309,18 +1310,27 @@ td span {
   }
 
   .stat-card {
-    padding: 14px;
-    gap: 10px;
+    padding: 16px 12px;
+    gap: 12px;
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .stat-card p {
+    font-size: 0.75rem;
   }
 
   .stat-card strong {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
+    margin-top: 4px;
   }
 
   .stat-icon {
-    width: 38px;
-    height: 38px;
-    font-size: 0.85rem;
+    width: 42px;
+    height: 42px;
+    font-size: 1rem;
+    margin: 0 auto;
   }
 
   .dashboard-grid {
@@ -1349,12 +1359,18 @@ td span {
   }
 
   .status-card {
-    padding: 12px;
-    min-height: 72px;
+    padding: 16px 14px;
+    min-height: 84px;
+    background: #141414;
+    border-radius: var(--radius);
+  }
+
+  .status-card span {
+    font-size: 0.8rem;
   }
 
   .status-card strong {
-    font-size: 1.5rem;
+    font-size: 1.7rem;
   }
 
   .panel {
@@ -1407,15 +1423,18 @@ td span {
 
   /* Order columns scroll horizontally on mobile */
   .order-columns {
-    grid-template-columns: repeat(5, 260px);
-    gap: 10px;
+    grid-template-columns: repeat(5, 280px);
+    gap: 12px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 8px;
+    padding-bottom: 12px;
+    scroll-snap-type: x mandatory;
   }
 
   .order-column {
-    min-width: 240px;
+    min-width: 260px;
+    scroll-snap-align: start;
+    background: #0a0a0a;
   }
 
   .godown-board {
