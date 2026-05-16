@@ -121,9 +121,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const splash = document.getElementById("splash-screen");
         if (splash) {
             splash.classList.add("fade-out");
-            setTimeout(() => splash.remove(), 500);
+            setTimeout(() => splash.remove(), 800);
         }
-    }, 1600);
+    }, 2100);
 });
 
 function setupLogin() {
