@@ -1534,7 +1534,8 @@ td span {
   }
 
   .stock-product {
-    min-width: 180px;
+    min-width: 140px;
+    position: static;
   }
 
   .stock-cell {
