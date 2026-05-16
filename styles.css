@@ -32,7 +32,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: var(--white);
+  background: var(--black);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -53,10 +53,10 @@ body {
 }
 
 @keyframes logoMotion {
-  0% { transform: translateZ(-300px) rotateX(15deg) scale(0.5); opacity: 0; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); }
-  20% { transform: translateZ(0) rotateX(0deg) scale(1); opacity: 1; filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3)); }
-  75% { transform: translateZ(0) rotateX(0deg) scale(1.08); opacity: 1; filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.4)); }
-  100% { transform: translateZ(200px) scale(0); opacity: 0; filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)); }
+  0% { transform: translateZ(-300px) rotateX(15deg) scale(0.5); opacity: 0; }
+  20% { transform: translateZ(0) rotateX(0deg) scale(1); opacity: 1; }
+  75% { transform: translateZ(0) rotateX(0deg) scale(1.08); opacity: 1; }
+  100% { transform: translateZ(200px) scale(0); opacity: 0; }
 }
 
 .splash-screen.fade-out {
@@ -88,8 +88,6 @@ body {
   margin: 0 auto 18px;
   border: none;
   border-radius: var(--radius);
-  background: var(--white);
-  padding: 8px;
 }
 
 .login-heading {
@@ -271,8 +269,6 @@ td span,
   height: 38px;
   width: auto;
   border-radius: 6px;
-  background: var(--white);
-  padding: 2px;
 }
 
 .page-title h1 {
