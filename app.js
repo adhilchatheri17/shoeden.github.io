@@ -537,6 +537,7 @@ async function saveNewOrder() {
     const customerName = document.getElementById("customerName").value.trim();
     const customerPhone = document.getElementById("customerPhone").value.trim();
     const deliveryArea = document.getElementById("deliveryArea").value.trim();
+    const locationLink = document.getElementById("locationLink").value.trim();
     const orderDate = document.getElementById("orderDate").value;
     const notes = document.getElementById("orderNotes").value.trim();
     const items = collectItems();
@@ -553,6 +554,7 @@ async function saveNewOrder() {
         customerName,
         customerPhone,
         deliveryArea,
+        locationLink,
         godownLocation,
         whatsappGroup: godown.group,
         status: "New",
@@ -715,6 +717,7 @@ function renderOrdersTable() {
             order.customerName,
             order.customerPhone,
             order.deliveryArea,
+            order.locationLink,
             order.godownLocation,
             order.whatsappGroup
         ].join(" ").toLowerCase();
@@ -814,6 +817,7 @@ function renderShareOrdersPage() {
                     <strong>${escapeHtml(order.agentName || "Agent")} <small>${escapeHtml(order.id)}</small></strong>
                     <span>${escapeHtml([order.godownLocation, order.status || "New", formatDate(order.date)].filter(Boolean).join(" / "))}</span>
                     <span>${escapeHtml([order.customerName, order.customerPhone, order.deliveryArea].filter(Boolean).join(" / ") || "Customer details not added")}</span>
+                    ${order.locationLink ? '<span class="location-ready">Location link added</span>' : '<span class="location-missing">No map location</span>'}
                     <b>${totalQty} qty</b>
                 </span>
             </label>
@@ -861,7 +865,8 @@ function buildShareMessage(selectedOrders) {
             if (order.customerName || order.customerPhone) {
                 lines.push(`   Customer: ${[order.customerName, order.customerPhone].filter(Boolean).join(" / ")}`);
             }
-            if (order.deliveryArea) lines.push(`   Area: ${order.deliveryArea}`);
+            if (order.deliveryArea) lines.push(`   Address: ${order.deliveryArea}`);
+            if (order.locationLink) lines.push(`   Location: ${order.locationLink}`);
             lines.push(`   Items: ${formatShareItems(order.items)}`);
             if (order.notes) lines.push(`   Notes: ${order.notes}`);
         });
@@ -942,11 +947,12 @@ function renderOrderCard(order) {
                 <input type="date" class="order-date-input" value="${escapeHtml(dateVal)}" onchange="updateOrderDate('${safeOrderId}', this.value)" title="Change order date">
             </div>
             
-            ${order.customerName || order.deliveryArea || order.customerPhone ? `
+            ${order.customerName || order.deliveryArea || order.customerPhone || order.locationLink ? `
             <div class="order-card-details">
                 ${order.customerName ? `<div><i class="fa-solid fa-user"></i> ${escapeHtml(order.customerName)}</div>` : ''}
                 ${order.customerPhone ? `<div><i class="fa-solid fa-phone"></i> ${escapeHtml(order.customerPhone)}</div>` : ''}
                 ${order.deliveryArea ? `<div><i class="fa-solid fa-location-dot"></i> ${escapeHtml(order.deliveryArea)}</div>` : ''}
+                ${order.locationLink ? `<div><i class="fa-solid fa-map-location-dot"></i> <a href="${escapeHtml(order.locationLink)}" target="_blank" rel="noopener">Open location</a></div>` : ''}
             </div>` : ''}
             
             <div class="items-cell">${formatItems(order.items)}</div>
@@ -1269,7 +1275,7 @@ window.logout = async function() {
 window.exportData = function() {
     const headerCols = [
         "Order ID", "Date", "Status", "Godown", "WhatsApp Group", "Agent",
-        "Customer", "Phone", "Delivery Area", "Product", "Color", "Quantity", "Notes"
+        "Customer", "Phone", "Delivery Area", "Location Link", "Product", "Color", "Quantity", "Notes"
     ];
 
     let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -1300,6 +1306,7 @@ window.exportData = function() {
                 order.customerName || "",
                 order.customerPhone || "",
                 order.deliveryArea || "",
+                order.locationLink || "",
                 INVENTORY_CONFIG[item.product]?.name || item.product,
                 item.color || "",
                 item.qty,
@@ -1340,13 +1347,15 @@ function renderCatalog() {
 }
 
 function fromDbOrder(row) {
+    const deliveryInfo = parseDeliveryInfo(row.delivery_area || "");
     return {
         id: row.id,
         date: row.date,
         agentName: row.agent_name,
         customerName: row.customer_name || "",
         customerPhone: row.customer_phone || "",
-        deliveryArea: row.delivery_area || "",
+        deliveryArea: deliveryInfo.area,
+        locationLink: deliveryInfo.locationLink,
         godownLocation: row.godown_location,
         whatsappGroup: row.whatsapp_group || "",
         status: row.status || "New",
@@ -1362,7 +1371,7 @@ function toDbOrder(order) {
         agent_name: order.agentName,
         customer_name: order.customerName,
         customer_phone: order.customerPhone,
-        delivery_area: order.deliveryArea,
+        delivery_area: formatDeliveryInfo(order.deliveryArea, order.locationLink),
         godown_location: order.godownLocation,
         whatsapp_group: order.whatsappGroup,
         status: order.status,
@@ -1380,8 +1389,34 @@ function formatItems(items) {
 }
 
 function customerLine(order) {
-    const parts = [order.customerName, order.customerPhone, order.deliveryArea].filter(Boolean);
+    const parts = [order.customerName, order.customerPhone, order.deliveryArea, order.locationLink].filter(Boolean);
     return parts.length ? parts.join(" / ") : "Customer details not added";
+}
+
+function parseDeliveryInfo(value) {
+    const lines = String(value || "").split(/\r?\n/);
+    const areaLines = [];
+    let locationLink = "";
+
+    lines.forEach(line => {
+        const match = line.match(/^\s*Location:\s*(.+)\s*$/i);
+        if (match) {
+            locationLink = match[1].trim();
+        } else if (line.trim()) {
+            areaLines.push(line.trim());
+        }
+    });
+
+    return {
+        area: areaLines.join(", "),
+        locationLink
+    };
+}
+
+function formatDeliveryInfo(area, locationLink) {
+    const cleanArea = String(area || "").trim();
+    const cleanLink = String(locationLink || "").trim();
+    return [cleanArea, cleanLink ? `Location: ${cleanLink}` : ""].filter(Boolean).join("\n");
 }
 
 function getGodownGroup(godownId) {

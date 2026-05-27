@@ -905,6 +905,13 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   text-align: center;
 }
 
+.order-card-details a {
+  color: var(--black);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .item-ordered {
   display: flex;
   align-items: center;
@@ -1249,6 +1256,24 @@ td span {
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.35;
+}
+
+.share-order-body .location-ready,
+.share-order-body .location-missing {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-weight: 800;
+}
+
+.share-order-body .location-ready {
+  background: #eef7f0;
+  color: #1f7a3f;
+}
+
+.share-order-body .location-missing {
+  background: #fbefef;
+  color: #9a241b;
 }
 
 .share-order-body b {

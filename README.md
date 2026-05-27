@@ -21,6 +21,8 @@ The Stock screen calculates dispatched-but-not-delivered hold quantity from orde
 
 If the Stock screen says setup is incomplete, run the latest `supabase-schema.sql` again. The script is safe to rerun and creates the missing stock table, status constraint, and row-level security policies.
 
+Order entry supports both a delivery area/address and an optional Google Maps or WhatsApp location link. The location link is included in delivery-team share messages and exports.
+
 ## GitHub Pages
 
 Deploy the repository root from the `main` branch.
