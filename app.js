@@ -540,6 +540,8 @@ async function saveNewOrder() {
     const locationLink = document.getElementById("locationLink").value.trim();
     const orderDate = document.getElementById("orderDate").value;
     const notes = document.getElementById("orderNotes").value.trim();
+    const specificDate = document.getElementById("specificDate").value;
+    const isInfluencer = document.getElementById("isInfluencer").checked;
     const items = collectItems();
 
     if (!godownLocation || !agentName || !items.length || !orderDate) {
@@ -559,6 +561,8 @@ async function saveNewOrder() {
         whatsappGroup: godown.group,
         status: "New",
         notes,
+        specificDate,
+        isInfluencer,
         items
     };
 
@@ -584,7 +588,7 @@ async function saveNewOrder() {
         syncShareSelection();
         renderShareOrdersPage();
         renderStockTable();
-        document.querySelector('[data-target="dashboard"]').click();
+        document.querySelector('[data-target="orders-list"]').click();
     } catch (error) {
         showToast("Database rejected save. Check Supabase setup/RLS.", true);
     }
@@ -924,47 +928,95 @@ function shareToWhatsApp() {
 function renderOrderCard(order) {
     const status = order.status || "New";
     const dateVal = toDateInputValue(order.date);
-    
-    const phone = order.customerPhone || "";
-    const lastFive = phone.length >= 5 ? phone.slice(-5) : phone;
-    const title = `${order.agentName}${lastFive ? ' - ' + lastFive : ''}`;
     const safeOrderId = jsString(order.id);
     
-    const searchString = `${order.notes || ""} ${order.agentName} ${order.customerName || ""}`.toLowerCase();
-    const isInfluencer = searchString.includes("youtube") || searchString.includes("influencer") || searchString.includes("promo");
+    // Influencer logic based on both explicit flag and keywords
+    const isInfluencer = order.isInfluencer || 
+        `${order.notes || ""} ${order.agentName} ${order.customerName || ""}`.toLowerCase().includes("influencer");
 
     return `
-        <article class="order-card ${isInfluencer ? 'influencer-card' : ''}">
-            <div class="order-card-top">
-                <strong class="order-card-title">${escapeHtml(title)}</strong>
-                <button class="icon-button danger" onclick="deleteOrder('${safeOrderId}')" title="Delete order">
+        <article class="order-card-v2 ${isInfluencer ? 'is-influencer' : ''} status-${status.toLowerCase()}">
+            <div class="card-header">
+                <div class="location-badge">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>${escapeHtml(order.godownLocation)}</span>
+                </div>
+                <button class="card-delete-btn" onclick="deleteOrder('${safeOrderId}')" title="Delete">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </div>
-            ${isInfluencer ? '<div class="influencer-badge"><i class="fa-brands fa-youtube"></i> VIP / Influencer</div>' : ''}
-            
-            <div class="order-card-date">
-                <input type="date" class="order-date-input" value="${escapeHtml(dateVal)}" onchange="updateOrderDate('${safeOrderId}', this.value)" title="Change order date">
+
+            <div class="card-main">
+                <div class="main-info">
+                    <h4 class="agent-name">${escapeHtml(order.agentName)}</h4>
+                    <div class="customer-phone">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>${escapeHtml(order.customerPhone || "No Phone")}</span>
+                    </div>
+                </div>
+                
+                <div class="order-meta">
+                    <div class="meta-item">
+                        <i class="fa-solid fa-calendar-day"></i>
+                        <span>${toDateDisplay(order.date)}</span>
+                    </div>
+                    ${order.specificDate ? `
+                    <div class="meta-item specific-date">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Target: ${toDateDisplay(order.specificDate)}</span>
+                    </div>` : ''}
+                </div>
             </div>
-            
-            ${order.customerName || order.deliveryArea || order.customerPhone || order.locationLink ? `
-            <div class="order-card-details">
-                ${order.customerName ? `<div><i class="fa-solid fa-user"></i> ${escapeHtml(order.customerName)}</div>` : ''}
-                ${order.customerPhone ? `<div><i class="fa-solid fa-phone"></i> ${escapeHtml(order.customerPhone)}</div>` : ''}
-                ${order.deliveryArea ? `<div><i class="fa-solid fa-location-dot"></i> ${escapeHtml(order.deliveryArea)}</div>` : ''}
-                ${order.locationLink ? `<div><i class="fa-solid fa-map-location-dot"></i> <a href="${escapeHtml(order.locationLink)}" target="_blank" rel="noopener">Open location</a></div>` : ''}
+
+            <div class="card-products">
+                ${formatItemsMinimal(order.items)}
+            </div>
+
+            ${order.notes ? `
+            <div class="card-notes">
+                <i class="fa-solid fa-quote-left"></i>
+                <p>${escapeHtml(order.notes)}</p>
             </div>` : ''}
-            
-            <div class="items-cell">${formatItems(order.items)}</div>
-            
-            <div class="order-status-row">
-                <select class="status-select" onchange="updateOrderStatus('${safeOrderId}', this.value)">
-                    ${STATUSES.map(value => `<option value="${escapeHtml(value)}" ${value === status ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
-                </select>
+
+            <div class="card-footer">
+                <div class="area-tag" title="${escapeHtml(order.deliveryArea)}">
+                    <i class="fa-solid fa-map-pin"></i>
+                    <span>${escapeHtml(order.deliveryArea || "No Area")}</span>
+                </div>
+                <div class="status-wrapper">
+                    <select class="status-select-v2" onchange="updateOrderStatus('${safeOrderId}', this.value)">
+                        ${STATUSES.map(value => `<option value="${escapeHtml(value)}" ${value === status ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
+                    </select>
+                </div>
             </div>
+            
+            ${isInfluencer ? '<div class="influencer-ribbon">INFLUENCER</div>' : ''}
         </article>
     `;
 }
+
+function toDateDisplay(date) {
+    if (!date) return "";
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+function formatItemsMinimal(items) {
+    if (!items || !items.length) return '<div class="no-items">No products</div>';
+    return items.map(item => {
+        const product = INVENTORY_CONFIG[item.product];
+        const color = item.color ? `<span>${escapeHtml(item.color)}</span>` : "";
+        return `
+            <div class="product-line">
+                <span class="product-qty">${escapeHtml(String(item.qty))}x</span>
+                <span class="product-name">${escapeHtml(product?.name || item.product)}</span>
+                ${color}
+            </div>
+        `;
+    }).join("");
+}
+
 
 function renderStockTable() {
     const head = document.getElementById("stock-table-head");
@@ -1346,25 +1398,12 @@ function renderCatalog() {
     });
 }
 
-function fromDbOrder(row) {
-    const deliveryInfo = parseDeliveryInfo(row.delivery_area || "");
-    return {
-        id: row.id,
-        date: row.date,
-        agentName: row.agent_name,
-        customerName: row.customer_name || "",
-        customerPhone: row.customer_phone || "",
-        deliveryArea: deliveryInfo.area,
-        locationLink: deliveryInfo.locationLink,
-        godownLocation: row.godown_location,
-        whatsappGroup: row.whatsapp_group || "",
-        status: row.status || "New",
-        notes: row.notes || "",
-        items: Array.isArray(row.items) ? row.items : []
-    };
-}
-
 function toDbOrder(order) {
+    // Pack extra fields into notes to avoid DB schema breaking
+    let dbNotes = order.notes || "";
+    if (order.isInfluencer) dbNotes = `[INFLUENCER] ${dbNotes}`;
+    if (order.specificDate) dbNotes = `${dbNotes}\n[TARGET_DATE:${order.specificDate}]`;
+
     return {
         id: order.id,
         date: order.date,
@@ -1375,8 +1414,44 @@ function toDbOrder(order) {
         godown_location: order.godownLocation,
         whatsapp_group: order.whatsappGroup,
         status: order.status,
-        notes: order.notes,
+        notes: dbNotes,
         items: order.items
+    };
+}
+
+function fromDbOrder(row) {
+    let notes = row.notes || "";
+    let isInfluencer = false;
+    let specificDate = "";
+
+    if (notes.includes("[INFLUENCER]")) {
+        isInfluencer = true;
+        notes = notes.replace("[INFLUENCER]", "").trim();
+    }
+
+    const dateMatch = notes.match(/\[TARGET_DATE:(.+?)\]/);
+    if (dateMatch) {
+        specificDate = dateMatch[1];
+        notes = notes.replace(dateMatch[0], "").trim();
+    }
+
+    const delivery = parseDeliveryInfo(row.delivery_area || "");
+
+    return {
+        id: row.id,
+        date: row.date,
+        agentName: row.agent_name,
+        customerName: row.customer_name || "",
+        customerPhone: row.customer_phone || "",
+        deliveryArea: delivery.area,
+        locationLink: delivery.locationLink,
+        godownLocation: row.godown_location,
+        whatsappGroup: row.whatsapp_group || "",
+        status: row.status || "New",
+        notes: notes.trim(),
+        isInfluencer: isInfluencer,
+        specificDate: specificDate,
+        items: Array.isArray(row.items) ? row.items : []
     };
 }
 

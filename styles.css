@@ -1843,3 +1843,243 @@ td span {
     padding-bottom: 86px;
   }
 }
+
+/* ── Redesigned Order Cards V2 ── */
+.order-card-v2 {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  margin-bottom: 12px;
+}
+
+.order-card-v2:hover {
+  border-color: var(--line-strong);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.location-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0f0f0;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+.card-delete-btn {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.card-delete-btn:hover {
+  color: var(--danger);
+}
+
+.card-main {
+  display: grid;
+  gap: 8px;
+}
+
+.agent-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--black);
+}
+
+.customer-phone {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.order-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: var(--muted-2);
+  background: #f8f8f8;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.specific-date {
+  color: #7d5200;
+  background: #fff8e6;
+  border: 1px solid #ffeeba;
+}
+
+.card-products {
+  background: #fdfdfd;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.product-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+}
+
+.product-line:last-child {
+  margin-bottom: 0;
+}
+
+.product-qty {
+  font-weight: 800;
+  color: var(--black);
+  min-width: 24px;
+}
+
+.product-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.card-notes {
+  font-size: 0.8rem;
+  color: #555;
+  background: #fcfcf9;
+  padding: 8px 10px;
+  border-left: 3px solid var(--line-strong);
+  font-style: italic;
+  display: flex;
+  gap: 8px;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  gap: 10px;
+}
+
+.area-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-wrapper-v2 {
+  flex: 0 0 auto;
+}
+
+.status-select-v2 {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 24px 4px 8px;
+  border-radius: 6px;
+  min-height: 28px;
+  width: auto;
+  border: 1px solid #ddd;
+  background-color: white;
+}
+
+/* ── Influencer Highlighting ── */
+.order-card-v2.is-influencer {
+  border: 2px solid #ffd700;
+  background: #fffdf0;
+}
+
+.influencer-ribbon {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ffd700;
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  letter-spacing: 0.05em;
+}
+
+/* ── Status Colors ── */
+.order-card-v2.status-packed { border-left: 6px solid #ff9800; }
+.order-card-v2.status-dispatched { border-left: 6px solid #2196f3; }
+.order-card-v2.status-delivered { border-left: 6px solid #4caf50; opacity: 0.9; }
+.order-card-v2.status-returned { border-left: 6px solid #f44336; }
+.order-card-v2.status-new { border-left: 6px solid #9e9e9e; }
+
+/* ── Form Compact Row ── */
+.form-row-compact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: flex-end;
+  margin-top: 10px;
+}
+
+.checkbox-group {
+  padding-bottom: 12px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  cursor: pointer;
+}
+
+.checkbox-label span {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+/* ── Table Layout Fixes ── */
+.order-column-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
