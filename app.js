@@ -54,8 +54,13 @@ const GODOWNS = [
 const STOCK_VARIANTS = buildStockVariants();
 const STATUSES = ["New", "Packed", "Dispatched", "Delivered", "Returned"];
 const ACTIVE_STATUSES = ["New", "Packed", "Dispatched"];
+const SHARE_STATUS_PRESETS = {
+    active: ["New", "Packed", "Dispatched"]
+};
 const SUPABASE_CONFIG = window.SHOEDEN_SUPABASE || {};
+const SUPABASE_LIBRARY_READY = Boolean(window.supabase?.createClient);
 const SUPABASE_IS_CONFIGURED = Boolean(
+    SUPABASE_LIBRARY_READY &&
     SUPABASE_CONFIG.url &&
     SUPABASE_CONFIG.anonKey &&
     !SUPABASE_CONFIG.url.includes("PASTE_") &&
@@ -68,6 +73,10 @@ const supabaseClient = SUPABASE_IS_CONFIGURED
 let orders = [];
 let stocks = [];
 let currentOrdersGodown = "All";
+let stockStorageAvailable = true;
+let stockSetupToastShown = false;
+let stockStorageMessage = "";
+let selectedShareOrderIds = new Set();
 
 const navItems = document.querySelectorAll(".nav-item");
 const views = document.querySelectorAll(".view-section");
@@ -81,6 +90,15 @@ const itemsContainer = document.getElementById("order-items-container");
 const addItemBtn = document.getElementById("add-item-btn");
 const itemTemplate = document.getElementById("item-template");
 const toast = document.getElementById("toast");
+const shareTeamSelect = document.getElementById("shareTeam");
+const shareGodownSelect = document.getElementById("shareGodown");
+const shareStatusSelect = document.getElementById("shareStatus");
+const shareMessage = document.getElementById("share-message");
+const shareOrdersList = document.getElementById("share-orders-list");
+const shareOrderCount = document.getElementById("share-order-count");
+const shareQtyCount = document.getElementById("share-qty-count");
+const copyShareBtn = document.getElementById("copy-share-message");
+const whatsappShareBtn = document.getElementById("whatsapp-share-message");
 
 const navConfig = {
     dashboard: {
@@ -94,6 +112,10 @@ const navConfig = {
     "orders-list": {
         title: "Orders",
         subtitle: "Godown-wise order board with delivered orders separated."
+    },
+    "share-orders": {
+        title: "Share Orders",
+        subtitle: "Send clear fitting and delivery lists to the right team."
     },
     stock: {
         title: "Stock",
@@ -111,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupNavigation();
     setupMobileNav();
     setupOrderForm();
+    setupSharePage();
     renderCatalog();
     addNewItem();
     setDefaultOrderDate();
@@ -178,7 +201,12 @@ function showLogin() {
 function ensureSupabaseConfigured() {
     if (SUPABASE_IS_CONFIGURED && supabaseClient) return true;
     showLogin();
-    showToast("Add your Supabase URL and anon key in supabase-config.js.", true);
+    showToast(
+        SUPABASE_LIBRARY_READY
+            ? "Add your Supabase URL and anon key in supabase-config.js."
+            : "Supabase could not load. Check your internet connection.",
+        true
+    );
     return false;
 }
 
@@ -222,7 +250,7 @@ function setupControls() {
 
     renderGodownTabs();
 
-    document.getElementById("search-orders").addEventListener("input", renderOrdersTable);
+    document.getElementById("search-orders")?.addEventListener("input", renderOrdersTable);
 }
 
 function renderGodownTabs() {
@@ -275,6 +303,8 @@ async function loadOrders() {
         orders = (data || []).map(fromDbOrder);
         updateDashboard();
         renderOrdersTable();
+        syncShareSelection();
+        renderShareOrdersPage();
         renderStockTable();
     } catch (error) {
         showToast("Could not load orders from Supabase.", true);
@@ -292,10 +322,22 @@ async function loadStocks() {
             .order("color", { ascending: true })
             .order("godown_location", { ascending: true });
         if (error) throw error;
+        stockStorageAvailable = true;
+        stockStorageMessage = "";
+        stockSetupToastShown = false;
         stocks = data || [];
         renderStockTable();
     } catch (error) {
-        showToast("Could not load stock from Supabase.", true);
+        const tableMissing = error?.code === "PGRST205" || String(error?.message || "").includes("godown_stocks");
+        stockStorageAvailable = !tableMissing;
+        stockStorageMessage = tableMissing
+            ? "Stock setup is incomplete. Run the godown_stocks section in supabase-schema.sql from the Supabase SQL Editor."
+            : "Could not load stock from Supabase. Check the table policies and network connection.";
+        stocks = [];
+        if (!stockSetupToastShown) {
+            showToast(stockStorageMessage, true);
+            stockSetupToastShown = true;
+        }
         renderStockTable();
     }
 }
@@ -370,6 +412,7 @@ function navigateTo(targetId) {
 
     if (targetId === "dashboard") updateDashboard();
     if (targetId === "orders-list") renderOrdersTable();
+    if (targetId === "share-orders") renderShareOrdersPage();
     if (targetId === "stock") renderStockTable();
 
     // Close mobile sidebar
@@ -386,6 +429,39 @@ function setupOrderForm() {
         event.preventDefault();
         saveNewOrder();
     });
+}
+
+function setupSharePage() {
+    if (!shareTeamSelect || !shareGodownSelect || !shareStatusSelect) return;
+
+    shareGodownSelect.innerHTML = '<option value="All">All Godowns</option>';
+    GODOWNS.forEach(godown => {
+        shareGodownSelect.insertAdjacentHTML(
+            "beforeend",
+            `<option value="${escapeHtml(godown.id)}">${escapeHtml(godown.label)}</option>`
+        );
+    });
+
+    [shareTeamSelect, shareGodownSelect, shareStatusSelect].forEach(control => {
+        control.addEventListener("change", () => {
+            selectedShareOrderIds = new Set(getShareCandidateOrders().map(order => order.id));
+            renderShareOrdersPage();
+        });
+    });
+
+    shareOrdersList?.addEventListener("change", event => {
+        const checkbox = event.target.closest(".share-order-check");
+        if (!checkbox) return;
+        if (checkbox.checked) {
+            selectedShareOrderIds.add(checkbox.value);
+        } else {
+            selectedShareOrderIds.delete(checkbox.value);
+        }
+        renderShareMessage();
+    });
+
+    copyShareBtn?.addEventListener("click", copyShareMessage);
+    whatsappShareBtn?.addEventListener("click", shareToWhatsApp);
 }
 
 function addNewItem() {
@@ -503,6 +579,8 @@ async function saveNewOrder() {
         addNewItem();
         updateDashboard();
         renderOrdersTable();
+        syncShareSelection();
+        renderShareOrdersPage();
         renderStockTable();
         document.querySelector('[data-target="dashboard"]').click();
     } catch (error) {
@@ -572,8 +650,8 @@ function renderGodownBars(godownCounts) {
         container.insertAdjacentHTML("beforeend", `
             <div class="bar-row">
                 <div class="bar-copy">
-                    <strong>${godown.label}</strong>
-                    <span>${godown.group}</span>
+                    <strong>${escapeHtml(godown.label)}</strong>
+                    <span>${escapeHtml(godown.group)}</span>
                 </div>
                 <div class="bar-track"><span style="width:${(count / max) * 100}%"></span></div>
                 <b>${count}</b>
@@ -588,7 +666,7 @@ function renderStatusStats(statusCounts) {
     STATUSES.forEach(status => {
         container.insertAdjacentHTML("beforeend", `
             <div class="status-card">
-                <span>${status}</span>
+                <span>${escapeHtml(status)}</span>
                 <strong>${statusCounts[status] || 0}</strong>
             </div>
         `);
@@ -608,11 +686,11 @@ function renderRecentOrders() {
         container.insertAdjacentHTML("beforeend", `
             <div class="recent-item">
                 <div>
-                    <strong>${order.id}</strong>
-                    <span>${order.agentName} / ${order.godownLocation}</span>
+                    <strong>${escapeHtml(order.id)}</strong>
+                    <span>${escapeHtml(order.agentName)} / ${escapeHtml(order.godownLocation)}</span>
                 </div>
                 <div class="recent-meta">
-                    <span class="status-pill">${order.status || "New"}</span>
+                    <span class="status-pill">${escapeHtml(order.status || "New")}</span>
                     <time>${formatDate(order.date)}</time>
                 </div>
             </div>
@@ -658,7 +736,7 @@ function renderOrdersTable() {
             return `
                 <div class="order-column ${extClass}">
                     <div class="order-column-title">
-                        <span>${status}</span>
+                        <span>${escapeHtml(status)}</span>
                         <b>${statusOrders.length}</b>
                     </div>
                     <div class="order-card-list">
@@ -672,8 +750,8 @@ function renderOrdersTable() {
             <section class="godown-board">
                 <div class="godown-board-head">
                     <div>
-                        <h3>${godown.label}</h3>
-                        <span>${godown.group}</span>
+                        <h3>${escapeHtml(godown.label)}</h3>
+                        <span>${escapeHtml(godown.group)}</span>
                     </div>
                     <strong>${godownOrders.length} orders</strong>
                 </div>
@@ -686,13 +764,166 @@ function renderOrdersTable() {
     board.classList.toggle("hide", matches === 0);
 }
 
+function getShareCandidateOrders() {
+    const godown = shareGodownSelect?.value || "All";
+    const statusFilter = shareStatusSelect?.value || "active";
+    const statuses = SHARE_STATUS_PRESETS[statusFilter] || [statusFilter];
+
+    return orders.filter(order => {
+        const status = order.status || "New";
+        return statuses.includes(status) &&
+            (godown === "All" || order.godownLocation === godown);
+    });
+}
+
+function syncShareSelection() {
+    const candidateIds = new Set(getShareCandidateOrders().map(order => order.id));
+    selectedShareOrderIds = new Set([...selectedShareOrderIds].filter(id => candidateIds.has(id)));
+    if (!selectedShareOrderIds.size) selectedShareOrderIds = candidateIds;
+}
+
+function renderShareOrdersPage() {
+    if (!shareOrdersList || !shareMessage) return;
+
+    const candidates = getShareCandidateOrders();
+    const candidateIds = new Set(candidates.map(order => order.id));
+    selectedShareOrderIds = new Set([...selectedShareOrderIds].filter(id => candidateIds.has(id)));
+    if (!selectedShareOrderIds.size && candidates.length) {
+        selectedShareOrderIds = candidateIds;
+    }
+
+    if (!candidates.length) {
+        shareOrdersList.innerHTML = `
+            <div class="empty-state compact">
+                <i class="fa-solid fa-share-nodes"></i>
+                <h3>No orders ready to share</h3>
+                <p>Change the godown or status filter, or add new orders first.</p>
+            </div>
+        `;
+        renderShareMessage();
+        return;
+    }
+
+    shareOrdersList.innerHTML = candidates.map(order => {
+        const checked = selectedShareOrderIds.has(order.id) ? "checked" : "";
+        const totalQty = getOrderQuantity(order);
+        return `
+            <label class="share-order-card">
+                <input type="checkbox" class="share-order-check" value="${escapeHtml(order.id)}" ${checked}>
+                <span class="share-order-body">
+                    <strong>${escapeHtml(order.agentName || "Agent")} <small>${escapeHtml(order.id)}</small></strong>
+                    <span>${escapeHtml([order.godownLocation, order.status || "New", formatDate(order.date)].filter(Boolean).join(" / "))}</span>
+                    <span>${escapeHtml([order.customerName, order.customerPhone, order.deliveryArea].filter(Boolean).join(" / ") || "Customer details not added")}</span>
+                    <b>${totalQty} qty</b>
+                </span>
+            </label>
+        `;
+    }).join("");
+
+    renderShareMessage();
+}
+
+function renderShareMessage() {
+    if (!shareMessage) return;
+
+    const selectedOrders = getShareCandidateOrders()
+        .filter(order => selectedShareOrderIds.has(order.id));
+    const totalQty = selectedOrders.reduce((sum, order) => sum + getOrderQuantity(order), 0);
+
+    if (shareOrderCount) shareOrderCount.textContent = selectedOrders.length;
+    if (shareQtyCount) shareQtyCount.textContent = totalQty;
+    shareMessage.value = buildShareMessage(selectedOrders);
+}
+
+function buildShareMessage(selectedOrders) {
+    const team = shareTeamSelect?.value === "delivery" ? "Delivery Team" : "Fitting Team";
+    const godown = shareGodownSelect?.value || "All";
+    const godownLabel = godown === "All" ? "All Godowns" : godown;
+    const today = new Date().toLocaleDateString([], { dateStyle: "medium" });
+
+    if (!selectedOrders.length) {
+        return `${team} - ${godownLabel}\n${today}\n\nNo orders selected.`;
+    }
+
+    const totalQty = selectedOrders.reduce((sum, order) => sum + getOrderQuantity(order), 0);
+    const grouped = groupOrdersByGodown(selectedOrders);
+    const lines = [
+        `ShoeDen ${team} Orders`,
+        `${godownLabel} - ${today}`,
+        `Orders: ${selectedOrders.length} | Total Qty: ${totalQty}`,
+        ""
+    ];
+
+    grouped.forEach(([groupName, groupOrders]) => {
+        lines.push(groupName);
+        groupOrders.forEach((order, index) => {
+            lines.push(`${index + 1}. ${order.agentName || "Agent"} | ${order.id} | ${order.status || "New"}`);
+            if (order.customerName || order.customerPhone) {
+                lines.push(`   Customer: ${[order.customerName, order.customerPhone].filter(Boolean).join(" / ")}`);
+            }
+            if (order.deliveryArea) lines.push(`   Area: ${order.deliveryArea}`);
+            lines.push(`   Items: ${formatShareItems(order.items)}`);
+            if (order.notes) lines.push(`   Notes: ${order.notes}`);
+        });
+        lines.push("");
+    });
+
+    lines.push("Please confirm once assigned.");
+    return lines.join("\n").trim();
+}
+
+function groupOrdersByGodown(orderList) {
+    return GODOWNS
+        .map(godown => [godown.label, orderList.filter(order => order.godownLocation === godown.id)])
+        .filter(([, groupOrders]) => groupOrders.length);
+}
+
+function formatShareItems(items = []) {
+    if (!items.length) return "No items";
+    return items.map(item => {
+        const product = INVENTORY_CONFIG[item.product]?.name || item.product;
+        const color = item.color ? ` (${item.color})` : "";
+        return `${item.qty}x ${product}${color}`;
+    }).join(", ");
+}
+
+function getOrderQuantity(order) {
+    return (order.items || []).reduce((sum, item) => sum + (Number.parseInt(item.qty, 10) || 0), 0);
+}
+
+async function copyShareMessage() {
+    const message = shareMessage?.value || "";
+    if (!message.trim()) {
+        showToast("No message to copy.", true);
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(message);
+        showToast("Team message copied.");
+    } catch (error) {
+        shareMessage?.select();
+        showToast("Select and copy the message manually.", true);
+    }
+}
+
+function shareToWhatsApp() {
+    const message = shareMessage?.value || "";
+    if (!message.trim()) {
+        showToast("No message to share.", true);
+        return;
+    }
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener");
+}
+
 function renderOrderCard(order) {
     const status = order.status || "New";
     const dateVal = toDateInputValue(order.date);
     
     const phone = order.customerPhone || "";
     const lastFive = phone.length >= 5 ? phone.slice(-5) : phone;
-    const title = `${order.agentName}${lastFive ? ' \u2014 ' + lastFive : ''}`;
+    const title = `${order.agentName}${lastFive ? ' - ' + lastFive : ''}`;
+    const safeOrderId = jsString(order.id);
     
     const searchString = `${order.notes || ""} ${order.agentName} ${order.customerName || ""}`.toLowerCase();
     const isInfluencer = searchString.includes("youtube") || searchString.includes("influencer") || searchString.includes("promo");
@@ -700,29 +931,29 @@ function renderOrderCard(order) {
     return `
         <article class="order-card ${isInfluencer ? 'influencer-card' : ''}">
             <div class="order-card-top">
-                <strong class="order-card-title">${title}</strong>
-                <button class="icon-button danger" onclick="deleteOrder('${order.id}')" title="Delete order">
+                <strong class="order-card-title">${escapeHtml(title)}</strong>
+                <button class="icon-button danger" onclick="deleteOrder('${safeOrderId}')" title="Delete order">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </div>
             ${isInfluencer ? '<div class="influencer-badge"><i class="fa-brands fa-youtube"></i> VIP / Influencer</div>' : ''}
             
             <div class="order-card-date">
-                <input type="date" class="order-date-input" value="${dateVal}" onchange="updateOrderDate('${order.id}', this.value)" title="Change order date">
+                <input type="date" class="order-date-input" value="${escapeHtml(dateVal)}" onchange="updateOrderDate('${safeOrderId}', this.value)" title="Change order date">
             </div>
             
             ${order.customerName || order.deliveryArea || order.customerPhone ? `
             <div class="order-card-details">
-                ${order.customerName ? `<div><i class="fa-solid fa-user"></i> ${order.customerName}</div>` : ''}
-                ${order.customerPhone ? `<div><i class="fa-solid fa-phone"></i> ${order.customerPhone}</div>` : ''}
-                ${order.deliveryArea ? `<div><i class="fa-solid fa-location-dot"></i> ${order.deliveryArea}</div>` : ''}
+                ${order.customerName ? `<div><i class="fa-solid fa-user"></i> ${escapeHtml(order.customerName)}</div>` : ''}
+                ${order.customerPhone ? `<div><i class="fa-solid fa-phone"></i> ${escapeHtml(order.customerPhone)}</div>` : ''}
+                ${order.deliveryArea ? `<div><i class="fa-solid fa-location-dot"></i> ${escapeHtml(order.deliveryArea)}</div>` : ''}
             </div>` : ''}
             
             <div class="items-cell">${formatItems(order.items)}</div>
             
             <div class="order-status-row">
-                <select class="status-select" onchange="updateOrderStatus('${order.id}', this.value)">
-                    ${STATUSES.map(value => `<option value="${value}" ${value === status ? "selected" : ""}>${value}</option>`).join("")}
+                <select class="status-select" onchange="updateOrderStatus('${safeOrderId}', this.value)">
+                    ${STATUSES.map(value => `<option value="${escapeHtml(value)}" ${value === status ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
                 </select>
             </div>
         </article>
@@ -732,14 +963,20 @@ function renderOrderCard(order) {
 function renderStockTable() {
     const head = document.getElementById("stock-table-head");
     const body = document.getElementById("stock-table-body");
+    const setupMessage = document.getElementById("stock-setup-message");
     if (!head || !body) return;
+
+    if (setupMessage) {
+        setupMessage.textContent = stockStorageMessage;
+        setupMessage.classList.toggle("hide", stockStorageAvailable || !stockStorageMessage);
+    }
 
     const stockData = calculateStockMetrics();
 
     head.innerHTML = `
         <tr>
             <th>Product</th>
-            ${GODOWNS.map(godown => `<th>${godown.label}</th>`).join("")}
+            ${GODOWNS.map(godown => `<th>${escapeHtml(godown.label)}</th>`).join("")}
             <th>Total Available</th>
         </tr>
     `;
@@ -766,8 +1003,9 @@ function renderStockTable() {
                         <input
                             type="number"
                             value="${currentPhysicalStock}"
+                            ${stockStorageAvailable ? "" : "disabled"}
                             onchange="updateStockQuantity('${jsString(godown.id)}', '${jsString(variant.product)}', '${jsString(variant.color)}', this.value)"
-                            aria-label="${variant.label} ${variant.color || "stock"} ${godown.label}"
+                            aria-label="${escapeHtml(`${variant.label} ${variant.color || "stock"} ${godown.label}`)}"
                         >
                         <div class="stock-metrics">
                             <span>Hold <b>${holdQty}</b></span>
@@ -782,8 +1020,8 @@ function renderStockTable() {
         return `
             <tr>
                 <td class="stock-product">
-                    <strong>${variant.label}</strong>
-                    <span>${variant.category}</span>
+                    <strong>${escapeHtml(variant.label)}</strong>
+                    <span>${escapeHtml(variant.category)}</span>
                 </td>
                 ${godownCells}
                 <td><strong class="${totalAvailable < 0 ? "negative" : totalAvailable <= 10 ? "low" : ""}">${totalAvailable}</strong></td>
@@ -810,7 +1048,7 @@ function renderStockTable() {
         const grandCls = grandTotal < 0 ? "negative" : grandTotal <= 10 ? "low" : "";
         return `
             <tr class="stock-subtotal-row">
-                <td class="stock-product stock-subtotal-cell"><strong>${label}</strong></td>
+                <td class="stock-product stock-subtotal-cell"><strong>${escapeHtml(label)}</strong></td>
                 ${godownCells}
                 <td class="stock-subtotal-cell"><strong class="${grandCls}">${grandTotal}</strong></td>
             </tr>
@@ -877,6 +1115,12 @@ function stockKeyForGodown(godown, product, color = "") {
 }
 
 window.updateStockQuantity = async function(godown, product, color, value) {
+    if (!stockStorageAvailable) {
+        showToast(stockStorageMessage || "Stock setup is incomplete.", true);
+        renderStockTable();
+        return;
+    }
+
     const currentPhysical = Number.parseInt(value, 10) || 0;
     
     // Add back the delivered quantity to save as Base Stock internally
@@ -928,6 +1172,8 @@ window.updateOrderStatus = async function(orderId, status) {
     const previousStatus = order.status || "New";
     order.status = status;
     updateDashboard();
+    syncShareSelection();
+    renderShareOrdersPage();
 
     try {
         await requireSession();
@@ -938,11 +1184,14 @@ window.updateOrderStatus = async function(orderId, status) {
         if (error) throw error;
         showToast("Status updated.");
         renderOrdersTable();
+        renderShareOrdersPage();
         renderStockTable();
     } catch (error) {
         order.status = previousStatus;
         updateDashboard();
         renderOrdersTable();
+        syncShareSelection();
+        renderShareOrdersPage();
         showToast("Database rejected status update.", true);
     }
 };
@@ -953,6 +1202,7 @@ window.updateOrderDate = async function(orderId, newDateValue) {
     const previousDate = order.date;
     order.date = new Date(newDateValue).toISOString();
     updateDashboard();
+    renderShareOrdersPage();
 
     try {
         await requireSession();
@@ -966,6 +1216,7 @@ window.updateOrderDate = async function(orderId, newDateValue) {
         order.date = previousDate;
         updateDashboard();
         renderOrdersTable();
+        renderShareOrdersPage();
         showToast("Database rejected date update.", true);
     }
 };
@@ -976,6 +1227,8 @@ window.deleteOrder = async function(orderId) {
     orders = orders.filter(order => order.id !== orderId);
     renderOrdersTable();
     updateDashboard();
+    syncShareSelection();
+    renderShareOrdersPage();
 
     try {
         await requireSession();
@@ -990,6 +1243,8 @@ window.deleteOrder = async function(orderId) {
         orders = previousOrders;
         updateDashboard();
         renderOrdersTable();
+        syncShareSelection();
+        renderShareOrdersPage();
         showToast("Database rejected deletion. Check RLS policies.", true);
     }
 };
@@ -1004,6 +1259,8 @@ window.logout = async function() {
     stocks = [];
     updateDashboard();
     renderOrdersTable();
+    syncShareSelection();
+    renderShareOrdersPage();
     renderStockTable();
     showLogin();
     showToast("Logged out.");
@@ -1071,11 +1328,11 @@ function renderCatalog() {
     Object.entries(INVENTORY_CONFIG).forEach(([key, product]) => {
         container.insertAdjacentHTML("beforeend", `
             <article class="catalog-card">
-                <span>${product.category}</span>
-                <h3>${product.name}</h3>
+                <span>${escapeHtml(product.category)}</span>
+                <h3>${escapeHtml(product.name)}</h3>
                 <p>${product.capacityPairs ? `${product.capacityPairs} pairs capacity` : "Foldable furniture item"}</p>
                 <div class="color-list">
-                    ${product.colors.length ? product.colors.map(color => `<b>${color}</b>`).join("") : "<b>No color selection</b>"}
+                    ${product.colors.length ? product.colors.map(color => `<b>${escapeHtml(color)}</b>`).join("") : "<b>No color selection</b>"}
                 </div>
             </article>
         `);
@@ -1117,8 +1374,8 @@ function toDbOrder(order) {
 function formatItems(items) {
     return items.map(item => {
         const product = INVENTORY_CONFIG[item.product];
-        const colorHtml = item.color ? `<span class="highlight-color"><i class="fa-solid fa-palette"></i> ${item.color}</span>` : "";
-        return `<div class="item-ordered"><strong class="highlight-qty">${item.qty}x</strong> <span class="highlight-product">${product?.name || item.product}</span> ${colorHtml}</div>`;
+        const colorHtml = item.color ? `<span class="highlight-color"><i class="fa-solid fa-palette"></i> ${escapeHtml(item.color)}</span>` : "";
+        return `<div class="item-ordered"><strong class="highlight-qty">${escapeHtml(String(item.qty))}x</strong> <span class="highlight-product">${escapeHtml(product?.name || item.product)}</span> ${colorHtml}</div>`;
     }).join("");
 }
 
@@ -1140,7 +1397,9 @@ function createOrderId(godown) {
 }
 
 function formatDate(date) {
-    return new Date(date).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+    const parsed = new Date(date);
+    if (isNaN(parsed.getTime())) return "Date not set";
+    return parsed.toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
 }
 
 function toDateInputValue(date) {

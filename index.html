@@ -73,6 +73,10 @@
                     <i class="fa-solid fa-list-check"></i>
                     <span>Orders</span>
                 </button>
+                <button class="nav-item" data-target="share-orders">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>Share</span>
+                </button>
                 <button class="nav-item" data-target="stock">
                     <i class="fa-solid fa-warehouse"></i>
                     <span>Stock</span>
@@ -101,6 +105,10 @@
             <button class="mobile-nav-btn" data-target="orders-list">
                 <i class="fa-solid fa-list-check"></i>
                 <span>Orders</span>
+            </button>
+            <button class="mobile-nav-btn" data-target="share-orders">
+                <i class="fa-solid fa-share-nodes"></i>
+                <span>Share</span>
             </button>
             <button class="mobile-nav-btn" data-target="stock">
                 <i class="fa-solid fa-warehouse"></i>
@@ -292,6 +300,75 @@
                     </div>
                 </section>
 
+                <section id="share-orders" class="view-section hide">
+                    <div class="share-layout">
+                        <div class="panel share-builder">
+                            <div class="panel-heading">
+                                <div>
+                                    <h3>Share Orders</h3>
+                                    <span>Prepare a clean message for fitting or delivery.</span>
+                                </div>
+                            </div>
+
+                            <div class="share-controls">
+                                <div class="form-group">
+                                    <label for="shareTeam">Team</label>
+                                    <select id="shareTeam">
+                                        <option value="fitting">Fitting Team</option>
+                                        <option value="delivery">Delivery Team</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="shareGodown">Godown</label>
+                                    <select id="shareGodown"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="shareStatus">Status</label>
+                                    <select id="shareStatus">
+                                        <option value="active">New + Packed + Dispatched</option>
+                                        <option value="New">New</option>
+                                        <option value="Packed">Packed</option>
+                                        <option value="Dispatched">Dispatched</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="share-summary-strip">
+                                <div>
+                                    <span>Selected orders</span>
+                                    <strong id="share-order-count">0</strong>
+                                </div>
+                                <div>
+                                    <span>Total quantity</span>
+                                    <strong id="share-qty-count">0</strong>
+                                </div>
+                            </div>
+
+                            <div class="share-list" id="share-orders-list"></div>
+                        </div>
+
+                        <div class="panel share-preview-panel">
+                            <div class="panel-heading row">
+                                <div>
+                                    <h3>Team Message</h3>
+                                    <span>Copy it or open WhatsApp.</span>
+                                </div>
+                                <div class="share-actions">
+                                    <button type="button" class="btn btn-secondary btn-compact" id="copy-share-message">
+                                        <i class="fa-solid fa-copy"></i>
+                                        <span>Copy</span>
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-compact" id="whatsapp-share-message">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                        <span>WhatsApp</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <textarea id="share-message" class="share-message" readonly></textarea>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="stock" class="view-section hide">
                     <div class="panel">
                         <div class="panel-heading row">
@@ -310,6 +387,8 @@
                             <span><b>Hold</b> dispatched but not delivered</span>
                             <span><b>Avail</b> stock minus hold</span>
                         </div>
+
+                        <div id="stock-setup-message" class="setup-alert hide"></div>
 
                         <div class="stock-scroll">
                             <table class="stock-table">
@@ -365,7 +444,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=9"></script>
+    <script src="app.js?v=10"></script>
 </body>
 
 </html>

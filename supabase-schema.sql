@@ -15,6 +15,13 @@ create table if not exists public.orders (
   created_at timestamptz not null default now()
 );
 
+alter table public.orders
+drop constraint if exists orders_status_check;
+
+alter table public.orders
+add constraint orders_status_check
+check (status in ('New', 'Packed', 'Dispatched', 'Delivered', 'Returned'));
+
 alter table public.orders enable row level security;
 
 drop policy if exists "Logged in users can read orders" on public.orders;
@@ -80,6 +87,13 @@ for update
 to authenticated
 using (true)
 with check (true);
+
+drop policy if exists "Logged in users can delete stock" on public.godown_stocks;
+create policy "Logged in users can delete stock"
+on public.godown_stocks
+for delete
+to authenticated
+using (true);
 
 drop trigger if exists set_godown_stocks_updated_at on public.godown_stocks;
 create or replace function public.set_updated_at()

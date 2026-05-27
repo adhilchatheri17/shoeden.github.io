@@ -19,6 +19,8 @@ The app stores:
 
 The Stock screen calculates dispatched-but-not-delivered hold quantity from orders with status `Dispatched`.
 
+If the Stock screen says setup is incomplete, run the latest `supabase-schema.sql` again. The script is safe to rerun and creates the missing stock table, status constraint, and row-level security policies.
+
 ## GitHub Pages
 
 Deploy the repository root from the `main` branch.
