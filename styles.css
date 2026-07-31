@@ -1256,7 +1256,8 @@ td span {
 
 .share-order-card {
   display: grid;
-  grid-template-columns: 22px 1fr;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
   gap: 12px;
   margin: 0;
   padding: 12px;
@@ -1264,6 +1265,18 @@ td span {
   border-radius: var(--radius);
   background: var(--white);
   cursor: pointer;
+}
+
+.share-single-btn {
+  color: #25d366;
+  border-color: #25d366;
+  padding: 0 10px;
+  height: 34px;
+}
+
+.share-single-btn:hover {
+  background: #25d366;
+  color: var(--white);
 }
 
 .share-order-card input {

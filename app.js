@@ -810,6 +810,7 @@ function renderShareOrdersPage() {
     shareOrdersList.innerHTML = candidates.map(order => {
         const checked = selectedShareOrderIds.has(order.id) ? "checked" : "";
         const totalQty = getOrderQuantity(order);
+        const safeOrderId = jsString(order.id);
         return `
             <label class="share-order-card">
                 <input type="checkbox" class="share-order-check" value="${escapeHtml(order.id)}" ${checked}>
@@ -820,6 +821,9 @@ function renderShareOrdersPage() {
                     ${order.locationLink ? '<span class="location-ready">Location link added</span>' : '<span class="location-missing">No map location</span>'}
                     <b>${totalQty} qty</b>
                 </span>
+                <button type="button" class="btn btn-compact btn-secondary share-single-btn" onclick="event.preventDefault(); event.stopPropagation(); shareSingleOrder('${safeOrderId}')" title="Share this single order to WhatsApp">
+                    <i class="fa-brands fa-whatsapp"></i>
+                </button>
             </label>
         `;
     }).join("");
@@ -846,34 +850,100 @@ function buildShareMessage(selectedOrders) {
     const today = new Date().toLocaleDateString([], { dateStyle: "medium" });
 
     if (!selectedOrders.length) {
-        return `${team} - ${godownLabel}\n${today}\n\nNo orders selected.`;
+        return `📋 *ShoeDen ${team} Orders*\n📍 ${godownLabel} - ${today}\n\n⚠️ No orders selected.`;
     }
 
     const totalQty = selectedOrders.reduce((sum, order) => sum + getOrderQuantity(order), 0);
     const grouped = groupOrdersByGodown(selectedOrders);
     const lines = [
-        `ShoeDen ${team} Orders`,
-        `${godownLabel} - ${today}`,
-        `Orders: ${selectedOrders.length} | Total Qty: ${totalQty}`,
-        ""
+        `🚚 *ShoeDen ${team} Orders*`,
+        `📍 *Godown:* ${godownLabel}`,
+        `📅 *Date:* ${today}`,
+        `📊 *Total:* ${selectedOrders.length} Orders (${totalQty} Items)`,
+        `================================`
     ];
 
+    let orderCounter = 1;
+
     grouped.forEach(([groupName, groupOrders]) => {
-        lines.push(groupName);
-        groupOrders.forEach((order, index) => {
-            lines.push(`${index + 1}. ${order.agentName || "Agent"} | ${order.id} | ${order.status || "New"}`);
-            if (order.customerName || order.customerPhone) {
-                lines.push(`   Customer: ${[order.customerName, order.customerPhone].filter(Boolean).join(" / ")}`);
+        lines.push(`\n🏢 *GODOWN: ${groupName.toUpperCase()}* (${groupOrders.length} orders)`);
+        lines.push(`--------------------------------`);
+
+        groupOrders.forEach(order => {
+            lines.push(`\n📦 *ORDER #${orderCounter}:* \`${order.id}\``);
+            
+            if (order.isInfluencer) {
+                lines.push(`🌟 *INFLUENCER ORDER*`);
             }
-            if (order.deliveryArea) lines.push(`   Address: ${order.deliveryArea}`);
-            if (order.locationLink) lines.push(`   Location: ${order.locationLink}`);
-            lines.push(`   Items: ${formatShareItems(order.items)}`);
-            if (order.notes) lines.push(`   Notes: ${order.notes}`);
+            
+            lines.push(`📌 *Agent:* ${order.agentName || "N/A"}`);
+            if (order.customerName) lines.push(`👤 *Customer:* ${order.customerName}`);
+            if (order.customerPhone) lines.push(`📞 *Phone:* ${order.customerPhone}`);
+            if (order.deliveryArea) lines.push(`📍 *Address:* ${order.deliveryArea}`);
+            if (order.locationLink) lines.push(`🗺️ *Location:* ${order.locationLink}`);
+            if (order.specificDate) lines.push(`📅 *Delivery Date:* ${order.specificDate}`);
+
+            lines.push(`🛒 *Items:*`);
+            (order.items || []).forEach(item => {
+                const product = INVENTORY_CONFIG[item.product]?.name || item.product;
+                const color = item.color ? ` (${item.color})` : "";
+                lines.push(`   • ${item.qty}x ${product}${color}`);
+            });
+
+            if (order.notes) lines.push(`📝 *Notes:* ${order.notes}`);
+            lines.push(`🚥 *Status:* ${order.status || "New"}`);
+            lines.push(`--------------------------------`);
+            orderCounter++;
         });
-        lines.push("");
     });
 
-    lines.push("Please confirm once assigned.");
+    lines.push(`\n================================`);
+    lines.push(`✅ *Please confirm once received & assigned.*`);
+    return lines.join("\n").trim();
+}
+
+window.shareSingleOrder = function(orderId) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) {
+        showToast("Order not found.", true);
+        return;
+    }
+    const message = buildSingleOrderMessage(order);
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener");
+};
+
+function buildSingleOrderMessage(order) {
+    const team = shareTeamSelect?.value === "delivery" ? "Delivery Team" : "Fitting Team";
+    const lines = [
+        `📦 *ShoeDen ${team} Order*`,
+        `================================`,
+        `🆔 *Order ID:* \`${order.id}\``
+    ];
+
+    if (order.isInfluencer) {
+        lines.push(`🌟 *INFLUENCER ORDER*`);
+    }
+
+    lines.push(`🏢 *Godown:* ${order.godownLocation || "N/A"}`);
+    lines.push(`📌 *Agent:* ${order.agentName || "N/A"}`);
+
+    if (order.customerName) lines.push(`👤 *Customer:* ${order.customerName}`);
+    if (order.customerPhone) lines.push(`📞 *Phone:* ${order.customerPhone}`);
+    if (order.deliveryArea) lines.push(`📍 *Address:* ${order.deliveryArea}`);
+    if (order.locationLink) lines.push(`🗺️ *Location:* ${order.locationLink}`);
+    if (order.specificDate) lines.push(`📅 *Delivery Date:* ${order.specificDate}`);
+
+    lines.push(`🛒 *Items:*`);
+    (order.items || []).forEach(item => {
+        const product = INVENTORY_CONFIG[item.product]?.name || item.product;
+        const color = item.color ? ` (${item.color})` : "";
+        lines.push(`   • ${item.qty}x ${product}${color}`);
+    });
+
+    if (order.notes) lines.push(`📝 *Notes:* ${order.notes}`);
+    lines.push(`🚥 *Status:* ${order.status || "New"}`);
+    lines.push(`================================`);
+
     return lines.join("\n").trim();
 }
 
