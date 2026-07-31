@@ -987,15 +987,50 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .setup-alert {
-  border: 1px solid var(--line-strong);
-  border-left: 4px solid var(--black);
+  border: 1px solid #fed7aa;
+  border-left: 4px solid #f97316;
   border-radius: var(--radius);
-  background: #fbfbf9;
-  color: var(--ink);
-  padding: 12px 14px;
-  margin-bottom: 14px;
+  background: #fff7ed;
+  color: #7c2d12;
+  padding: 16px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.setup-alert-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #9a3412;
+  margin-bottom: 6px;
+}
+
+.setup-alert-header i {
+  color: #f97316;
+  font-size: 1.1rem;
+}
+
+.setup-alert p {
+  margin: 0 0 12px 0;
+  font-size: 0.88rem;
+  color: #7c2d12;
+}
+
+.setup-alert p code {
+  background: #ffedd5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: inherit;
   font-weight: 700;
-  line-height: 1.45;
+  color: #9a3412;
+}
+
+.setup-alert-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .stock-scroll {
