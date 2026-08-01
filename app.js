@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
             splash.classList.add("fade-out");
             setTimeout(() => splash.remove(), 800);
         }
-    }, 2100);
+    }, 2500);
 });
 
 function setupLogin() {

@@ -1,20 +1,22 @@
 :root {
-  --black: #ffffff;
-  --ink: #f8fafc;
-  --paper: rgba(12, 12, 16, 0.75);
-  --panel: rgba(18, 18, 24, 0.58);
-  --panel-soft: rgba(255, 255, 255, 0.06);
-  --line: rgba(255, 255, 255, 0.14);
-  --line-strong: rgba(255, 255, 255, 0.28);
+  --black: #060608;
+  --ink: #ffffff;
+  --paper: rgba(12, 16, 26, 0.88);
+  --panel: rgba(18, 24, 38, 0.88);
+  --panel-soft: rgba(255, 255, 255, 0.08);
+  --line: rgba(255, 255, 255, 0.2);
+  --line-strong: rgba(255, 255, 255, 0.35);
   --white: #ffffff;
-  --muted: rgba(248, 250, 252, 0.62);
-  --muted-2: rgba(248, 250, 252, 0.82);
+  --muted: #cbd5e1;
+  --muted-2: #e2e8f0;
   --danger: #f87171;
   --success: #34d399;
-  --radius: 28px;
+  --accent: #38bdf8;
+  --accent-purple: #a855f7;
+  --radius: 24px;
   --radius-pill: 999px;
-  --shadow: 0 35px 70px -15px rgba(0, 0, 0, 0.7), inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.3), inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.6);
-  --glass-blur: blur(28px) saturate(140%);
+  --shadow: 0 35px 70px -15px rgba(0, 0, 0, 0.85), inset 0 1.5px 2px 0 rgba(255, 255, 255, 0.4), inset 0 -1.5px 2px 0 rgba(0, 0, 0, 0.7);
+  --glass-blur: blur(28px) saturate(160%);
 }
 
 * {
@@ -27,10 +29,10 @@ body {
   min-height: 100vh;
   background-color: #060608;
   background-image: 
-    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.07) 0%, transparent 40%),
-    radial-gradient(circle at 85% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(18, 18, 24, 0.85) 0%, #050507 100%);
-  color: var(--ink);
+    radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 75%, rgba(168, 85, 247, 0.07) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(18, 24, 38, 0.9) 0%, #050609 100%);
+  color: #ffffff;
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
   overflow-x: hidden;
   position: relative;
@@ -52,8 +54,8 @@ body::before {
   height: 360px;
   top: -80px;
   left: 60px;
-  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.32) 0%, rgba(50, 55, 65, 0.25) 45%, rgba(8, 8, 12, 0.95) 85%);
-  box-shadow: inset -12px -12px 35px rgba(0, 0, 0, 0.95), inset 8px 8px 25px rgba(255, 255, 255, 0.45), 0 25px 60px rgba(0, 0, 0, 0.85);
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.35) 0%, rgba(50, 60, 80, 0.3) 45%, rgba(8, 12, 18, 0.95) 85%);
+  box-shadow: inset -12px -12px 35px rgba(0, 0, 0, 0.95), inset 8px 8px 25px rgba(255, 255, 255, 0.5), 0 25px 60px rgba(0, 0, 0, 0.85);
   filter: blur(1px);
   opacity: 0.8;
   animation: floatOrb 14s ease-in-out infinite alternate;
@@ -65,8 +67,8 @@ body::after {
   height: 440px;
   bottom: -100px;
   right: 80px;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.26) 0%, rgba(40, 45, 55, 0.2) 50%, rgba(5, 5, 8, 0.98) 90%);
-  box-shadow: inset -15px -15px 45px rgba(0, 0, 0, 0.98), inset 10px 10px 30px rgba(255, 255, 255, 0.4), 0 35px 70px rgba(0, 0, 0, 0.9);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, rgba(40, 50, 70, 0.25) 50%, rgba(5, 8, 14, 0.98) 90%);
+  box-shadow: inset -15px -15px 45px rgba(0, 0, 0, 0.98), inset 10px 10px 30px rgba(255, 255, 255, 0.45), 0 35px 70px rgba(0, 0, 0, 0.9);
   filter: blur(2px);
   opacity: 0.75;
   animation: floatOrbReverse 18s ease-in-out infinite alternate;
@@ -84,12 +86,351 @@ body::after {
   100% { transform: translateY(25px) scale(1.03); }
 }
 
+/* ── 3D Liquid Animated Logo Pod & Color-Corrected Glow ── */
+.liquid-logo-pod {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at 35% 35%, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 70%, rgba(6, 6, 8, 1) 100%);
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 
+    0 20px 50px rgba(0, 0, 0, 0.95),
+    0 0 35px rgba(56, 189, 248, 0.6),
+    0 0 70px rgba(168, 85, 247, 0.4),
+    inset 0 4px 12px rgba(255, 255, 255, 0.8),
+    inset 0 -6px 16px rgba(56, 189, 248, 0.4);
+  overflow: hidden;
+  will-change: transform, border-radius, box-shadow;
+  animation: liquidPodMorph 7s ease-in-out infinite alternate, liquidGlowPulse 4s ease-in-out infinite alternate;
+}
+
+/* Liquid Blob Morphing Animation */
+@keyframes liquidPodMorph {
+  0% {
+    border-radius: 55% 45% 60% 40% / 45% 55% 45% 55%;
+  }
+  25% {
+    border-radius: 40% 60% 45% 55% / 60% 40% 55% 45%;
+  }
+  50% {
+    border-radius: 62% 38% 52% 48% / 42% 58% 42% 58%;
+  }
+  75% {
+    border-radius: 45% 55% 65% 35% / 55% 45% 60% 40%;
+  }
+  100% {
+    border-radius: 50% 50% 45% 55% / 50% 50% 55% 45%;
+  }
+}
+
+/* Dynamic Glowing aura pulse */
+@keyframes liquidGlowPulse {
+  0% {
+    box-shadow: 
+      0 15px 40px rgba(0, 0, 0, 0.9),
+      0 0 25px rgba(56, 189, 248, 0.5),
+      0 0 50px rgba(168, 85, 247, 0.3),
+      inset 0 4px 10px rgba(255, 255, 255, 0.85),
+      inset 0 -4px 12px rgba(56, 189, 248, 0.35);
+  }
+  100% {
+    box-shadow: 
+      0 30px 70px rgba(0, 0, 0, 1),
+      0 0 45px rgba(56, 189, 248, 0.9),
+      0 0 90px rgba(168, 85, 247, 0.75),
+      inset 0 6px 16px rgba(255, 255, 255, 1),
+      inset 0 -8px 20px rgba(168, 85, 247, 0.5);
+  }
+}
+
+/* Inner Liquid Background Flow */
+.liquid-pod-bg {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.3) 0%, rgba(168, 85, 247, 0.25) 45%, transparent 75%);
+  animation: liquidBgFlow 6s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes liquidBgFlow {
+  0% { transform: scale(0.9) rotate(0deg); }
+  100% { transform: scale(1.25) rotate(180deg); }
+}
+
+/* Organic Liquid Wave SVG layer */
+.liquid-wave-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.65;
+  mix-blend-mode: screen;
+}
+
+.liquid-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.liquid-wave-1 {
+  fill: url(#liquidGrad1);
+  animation: floatLiquidWave1 4s ease-in-out infinite alternate;
+}
+
+.liquid-wave-2 {
+  fill: url(#liquidGrad2);
+  animation: floatLiquidWave2 5s ease-in-out infinite alternate;
+}
+
+@keyframes floatLiquidWave1 {
+  0% { transform: translateY(10px) scaleY(0.9); }
+  100% { transform: translateY(-12px) scaleY(1.1); }
+}
+
+@keyframes floatLiquidWave2 {
+  0% { transform: translateY(-8px) rotate(-3deg); }
+  100% { transform: translateY(14px) rotate(4deg); }
+}
+
+/* Diagonal Specular Sheen Sweep */
+.liquid-pod-shine {
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 55%;
+  height: 200%;
+  background: linear-gradient(
+    90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.15) 25%, 
+    rgba(255, 255, 255, 0.95) 50%, 
+    rgba(255, 255, 255, 0.15) 75%, 
+    transparent 100%
+  );
+  transform: rotate(28deg);
+  pointer-events: none;
+  z-index: 2;
+  animation: shineSweep 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes shineSweep {
+  0% {
+    left: -70%;
+  }
+  45% {
+    left: 140%;
+  }
+  100% {
+    left: 140%;
+  }
+}
+
+/* Liquid Ripple Outer Rings */
+.liquid-pod-ripple {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 2px solid rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  animation: liquidRipple 3.5s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+}
+
+@keyframes liquidRipple {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.9;
+    border-color: rgba(56, 189, 248, 0.8);
+  }
+  70% {
+    border-color: rgba(168, 85, 247, 0.6);
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+    border-color: rgba(168, 85, 247, 0);
+  }
+}
+
+/* Floating Liquid Droplets Animation */
+.liquid-drops {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.liquid-drops .drop {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffffff 0%, #38bdf8 50%, #7c3aed 100%);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+  animation: floatDrop 3.5s ease-in-out infinite;
+}
+
+.liquid-drops .d1 {
+  width: 10px;
+  height: 10px;
+  bottom: 10%;
+  left: 20%;
+  animation-delay: 0s;
+}
+
+.liquid-drops .d2 {
+  width: 14px;
+  height: 14px;
+  bottom: 15%;
+  right: 22%;
+  animation-delay: 1.1s;
+}
+
+.liquid-drops .d3 {
+  width: 8px;
+  height: 8px;
+  top: 15%;
+  left: 30%;
+  animation-delay: 2.2s;
+}
+
+@keyframes floatDrop {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-40px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* Crisp Color-Corrected Logos */
+.splash-logo,
+.login-logo,
+.brand-logo {
+  object-fit: contain;
+  position: relative;
+  z-index: 3;
+  /* Color Correction: High contrast white silhouette with electric liquid glow */
+  filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(56, 189, 248, 0.9)) drop-shadow(0 0 28px rgba(168, 85, 247, 0.7));
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.liquid-logo-pod:hover .splash-logo,
+.liquid-logo-pod:hover .login-logo,
+.liquid-logo-pod:hover .brand-logo {
+  transform: scale(1.06);
+}
+
+/* Splash Pod Sizing & Fluid Motion */
+.liquid-logo-pod.splash-pod {
+  width: 210px;
+  height: 210px;
+  margin: 0 auto;
+  animation: splashLogoMotion 2.4s cubic-bezier(0.25, 1, 0.5, 1) forwards, liquidPodMorph 7s ease-in-out infinite alternate, liquidGlowPulse 4s ease-in-out infinite alternate;
+}
+
+.splash-logo {
+  width: 150px;
+  height: 150px;
+}
+
+@keyframes splashLogoMotion {
+  0% { 
+    transform: scale(0.3) rotate(-15deg); 
+    opacity: 0; 
+  }
+  30% { 
+    transform: scale(1.08) rotate(3deg); 
+    opacity: 1; 
+  }
+  75% { 
+    transform: scale(1) rotate(0deg); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: scale(1.05) rotate(0deg); 
+    opacity: 1; 
+  }
+}
+
+/* Splash Brand Text Below Logo */
+.splash-text-brand {
+  text-align: center;
+  margin-top: 20px;
+  animation: splashTextFadeIn 1.2s ease-out forwards;
+}
+
+.splash-title {
+  font-size: 2.3rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
+}
+
+.splash-title span {
+  color: #38bdf8;
+  background: linear-gradient(135deg, #38bdf8 0%, #a855f7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.splash-subtitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+@keyframes splashTextFadeIn {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Login Pod Sizing */
+.liquid-logo-pod.login-pod {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 24px;
+}
+
+.login-logo {
+  width: 102px;
+  height: 102px;
+}
+
+/* Sidebar Pod */
+.liquid-logo-pod.sidebar-pod {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+}
+
 /* ── Splash Screen ── */
 .splash-screen {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(6, 6, 8, 0.95);
+  background: radial-gradient(circle at 50% 45%, #0b0f19 0%, #060608 100%);
   backdrop-filter: blur(36px);
   display: flex;
   justify-content: center;
@@ -99,29 +440,15 @@ body::after {
 
 .splash-logo-wrapper {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100%;
 }
 
-.splash-logo {
-  width: 160px;
-  height: 160px;
-  object-fit: contain;
-  border-radius: 0;
-  box-shadow: none;
-  filter: drop-shadow(0 20px 40px rgba(255, 255, 255, 0.2));
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  animation: logoMotion 2.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
-@keyframes logoMotion {
-  0% { transform: scale(0.5); opacity: 0; }
-  25% { transform: scale(1); opacity: 1; }
-  75% { transform: scale(1.08); opacity: 1; }
-  100% { transform: scale(0.2); opacity: 0; }
+.splash-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .splash-screen.fade-out {
@@ -140,24 +467,13 @@ body::after {
 
 .login-card {
   width: min(440px, 100%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 36px;
-  background: rgba(18, 18, 24, 0.65);
-  backdrop-filter: blur(32px) saturate(150%);
-  -webkit-backdrop-filter: blur(32px) saturate(150%);
+  background: rgba(18, 24, 38, 0.85);
+  backdrop-filter: blur(32px) saturate(160%);
+  -webkit-backdrop-filter: blur(32px) saturate(160%);
   padding: 42px 38px;
-  box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.8), inset 0 1.5px 2px rgba(255, 255, 255, 0.35);
-}
-
-.login-logo {
-  width: 140px;
-  height: auto;
-  display: block;
-  margin: 0 auto 20px;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  filter: invert(1) brightness(1.25) drop-shadow(0 6px 20px rgba(255, 255, 255, 0.5));
+  box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.9), inset 0 1.5px 2px rgba(255, 255, 255, 0.4);
 }
 
 .login-heading {
@@ -174,10 +490,11 @@ body::after {
 }
 
 .login-help {
-  margin-top: 16px;
-  color: var(--muted);
+  margin-top: 18px;
+  color: #cbd5e1;
   text-align: center;
-  font-size: 0.86rem;
+  font-size: 0.88rem;
+  font-weight: 600;
 }
 
 button,
@@ -1541,15 +1858,17 @@ td span {
 }
 
 .share-summary-strip div {
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius);
-  background: #fbfbf9;
-  padding: 12px;
+  background: rgba(18, 24, 38, 0.88);
+  backdrop-filter: blur(14px);
+  padding: 14px;
+  box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.25);
 }
 
 .share-summary-strip span {
   display: block;
-  color: var(--muted);
+  color: #cbd5e1;
   font-size: 0.78rem;
   font-weight: 800;
   margin-bottom: 4px;
@@ -1558,6 +1877,7 @@ td span {
 
 .share-summary-strip strong {
   font-size: 1.45rem;
+  color: #ffffff;
 }
 
 .share-list {
@@ -1574,36 +1894,47 @@ td span {
   align-items: center;
   gap: 12px;
   margin: 0;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--white);
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 20px;
+  background: rgba(18, 24, 38, 0.85);
+  backdrop-filter: blur(16px);
   cursor: pointer;
+  box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.25), 0 8px 20px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.share-order-card:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-2px);
 }
 
 .share-single-btn {
   color: #25d366;
   border-color: #25d366;
-  padding: 0 10px;
-  height: 34px;
+  padding: 0 12px;
+  height: 36px;
+  background: rgba(37, 211, 102, 0.12);
+  font-weight: 800;
 }
 
 .share-single-btn:hover {
   background: #25d366;
-  color: var(--white);
+  color: #060608;
 }
 
 .share-order-card input {
   width: 18px;
   min-height: 18px;
   margin-top: 3px;
-  accent-color: var(--black);
+  accent-color: #38bdf8;
 }
 
 .share-order-body {
   display: grid;
   gap: 5px;
   min-width: 0;
+  color: #ffffff;
 }
 
 .share-order-body strong {
@@ -1611,12 +1942,14 @@ td span {
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
+  color: #ffffff;
+  font-size: 0.95rem;
 }
 
 .share-order-body small,
 .share-order-body span {
-  color: var(--muted);
-  font-size: 0.82rem;
+  color: #cbd5e1;
+  font-size: 0.84rem;
   line-height: 1.35;
 }
 
@@ -1624,25 +1957,30 @@ td span {
 .share-order-body .location-missing {
   width: fit-content;
   border-radius: 999px;
-  padding: 4px 8px;
+  padding: 4px 10px;
   font-weight: 800;
+  font-size: 0.75rem;
 }
 
 .share-order-body .location-ready {
-  background: #eef7f0;
-  color: #1f7a3f;
+  background: rgba(52, 211, 153, 0.2);
+  border: 1px solid #34d399;
+  color: #34d399;
 }
 
 .share-order-body .location-missing {
-  background: #fbefef;
-  color: #9a241b;
+  background: rgba(248, 113, 113, 0.2);
+  border: 1px solid #f87171;
+  color: #f87171;
 }
 
 .share-order-body b {
   width: fit-content;
   border-radius: 999px;
-  background: var(--panel-soft);
-  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 4px 10px;
   font-size: 0.78rem;
 }
 
@@ -2099,7 +2437,8 @@ td span {
   .order-column {
     min-width: 260px;
     scroll-snap-align: start;
-    background: #f2f2ee;
+    background: rgba(14, 18, 28, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
 
   .godown-board {

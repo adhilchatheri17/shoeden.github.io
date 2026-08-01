@@ -18,13 +18,54 @@
     <!-- Splash Screen -->
     <div id="splash-screen" class="splash-screen">
         <div class="splash-logo-wrapper">
-            <img src="assets/shoeden-logo.png" alt="ShoeDen logo" class="splash-logo">
+            <div class="liquid-logo-pod splash-pod">
+                <div class="liquid-pod-bg"></div>
+                <div class="liquid-wave-layer">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="liquid-svg">
+                        <defs>
+                            <linearGradient id="liquidGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.85" />
+                                <stop offset="100%" stop-color="#a855f7" stop-opacity="0.5" />
+                            </linearGradient>
+                            <linearGradient id="liquidGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#818cf8" stop-opacity="0.75" />
+                                <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.45" />
+                            </linearGradient>
+                        </defs>
+                        <path class="liquid-wave-1" d="M 0 100 Q 50 60 100 100 T 200 100 V 200 H 0 Z" />
+                        <path class="liquid-wave-2" d="M 0 110 Q 50 140 100 110 T 200 110 V 200 H 0 Z" />
+                    </svg>
+                </div>
+                <div class="liquid-pod-shine"></div>
+                <div class="liquid-pod-ripple"></div>
+                <div class="liquid-drops">
+                    <span class="drop d1"></span>
+                    <span class="drop d2"></span>
+                    <span class="drop d3"></span>
+                </div>
+                <img src="assets/shoeden-logo.png" alt="ShoeDen logo" class="splash-logo">
+            </div>
+            <div class="splash-text-brand">
+                <h1 class="splash-title">SHOE<span>DEN</span></h1>
+                <p class="splash-subtitle">Operations Desk</p>
+            </div>
         </div>
     </div>
 
     <section id="login-screen" class="login-screen">
         <form id="loginForm" class="login-card">
-            <img src="assets/shoeden-logo.png" alt="ShoeDen logo" class="login-logo">
+            <div class="liquid-logo-pod login-pod">
+                <div class="liquid-pod-bg"></div>
+                <div class="liquid-wave-layer">
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="liquid-svg">
+                        <path class="liquid-wave-1" d="M 0 100 Q 50 60 100 100 T 200 100 V 200 H 0 Z" />
+                        <path class="liquid-wave-2" d="M 0 110 Q 50 140 100 110 T 200 110 V 200 H 0 Z" />
+                    </svg>
+                </div>
+                <div class="liquid-pod-shine"></div>
+                <div class="liquid-pod-ripple"></div>
+                <img src="assets/shoeden-logo.png" alt="ShoeDen logo" class="login-logo">
+            </div>
             <div class="login-heading">
                 <p class="eyebrow">ShoeDen secure access</p>
                 <h1>Login</h1>
@@ -53,7 +94,9 @@
         <div id="sidebar-overlay" class="sidebar-overlay"></div>
         <aside id="sidebar" class="sidebar">
             <div class="brand-block">
-                <div class="brand-logo-wrap">
+                <div class="brand-logo-wrap liquid-logo-pod sidebar-pod">
+                    <div class="liquid-pod-bg"></div>
+                    <div class="liquid-pod-shine"></div>
                     <img src="assets/shoeden-logo.png" alt="ShoeDen logo" class="brand-logo">
                 </div>
                 <div>
