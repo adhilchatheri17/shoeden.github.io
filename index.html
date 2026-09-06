@@ -14,7 +14,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=3000">
+    <link rel="stylesheet" href="styles.css?v=4000">
 </head>
 
 <body>
@@ -86,6 +86,10 @@
                     <i class="fa-solid fa-list-check"></i>
                     <span>Orders</span>
                 </button>
+                <button class="nav-item" data-target="delivered-orders">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Delivered</span>
+                </button>
                 <button class="nav-item" data-target="share-orders">
                     <i class="fa-solid fa-share-nodes"></i>
                     <span>Share</span>
@@ -118,6 +122,10 @@
             <button class="mobile-nav-btn" data-target="orders-list">
                 <i class="fa-solid fa-list-check"></i>
                 <span>Orders</span>
+            </button>
+            <button class="mobile-nav-btn" data-target="delivered-orders">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Delivered</span>
             </button>
             <button class="mobile-nav-btn" data-target="share-orders">
                 <i class="fa-solid fa-share-nodes"></i>
@@ -342,6 +350,29 @@
                     </div>
                 </section>
 
+                <section id="delivered-orders" class="view-section hide">
+                    <div class="panel">
+                        <div class="table-controls">
+                            <div class="search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="search-delivered-orders"
+                                    placeholder="Search delivered ID, agent, customer, phone, area">
+                            </div>
+                        </div>
+
+                        <div class="godown-tabs" id="delivered-godown-tabs-container">
+                            <!-- Tabs generated from app.js -->
+                        </div>
+
+                        <div id="delivered-orders-board" class="orders-board"></div>
+                        <div id="no-delivered-orders-message" class="empty-state hide">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <h3>No delivered orders found</h3>
+                            <p>Orders marked as 'Delivered' will appear on this dedicated page.</p>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="share-orders" class="view-section hide">
                     <div class="share-layout">
                         <div class="panel share-builder">
@@ -486,7 +517,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=3000"></script>
+    <script src="app.js?v=4000"></script>
 </body>
 
 </html>

@@ -73,6 +73,7 @@ const supabaseClient = SUPABASE_IS_CONFIGURED
 let orders = [];
 let stocks = [];
 let currentOrdersGodown = "All";
+let currentDeliveredGodown = "All";
 let stockStorageAvailable = true;
 let stockSetupToastShown = false;
 let stockStorageMessage = "";
@@ -110,8 +111,12 @@ const navConfig = {
         subtitle: "Add orders received from the correct godown WhatsApp group."
     },
     "orders-list": {
-        title: "Orders",
-        subtitle: "Godown-wise order board with delivered orders separated."
+        title: "Active Orders",
+        subtitle: "Godown-wise active order board (New, Packed, Dispatched, Returned)."
+    },
+    "delivered-orders": {
+        title: "Delivered Orders",
+        subtitle: "Dedicated archive of all successfully delivered godown orders."
     },
     "share-orders": {
         title: "Share Orders",
@@ -255,8 +260,10 @@ function setupControls() {
     });
 
     renderGodownTabs();
+    renderDeliveredGodownTabs();
 
     document.getElementById("search-orders")?.addEventListener("input", renderOrdersTable);
+    document.getElementById("search-delivered-orders")?.addEventListener("input", renderDeliveredOrdersTable);
 }
 
 function renderGodownTabs() {
@@ -278,6 +285,29 @@ function renderGodownTabs() {
             currentOrdersGodown = tab.dataset.godown;
             renderGodownTabs(); // Update active class
             renderOrdersTable();
+        });
+    });
+}
+
+function renderDeliveredGodownTabs() {
+    const container = document.getElementById("delivered-godown-tabs-container");
+    if (!container) return;
+    
+    container.innerHTML = `<button class="godown-tab ${currentDeliveredGodown === "All" ? "active" : ""}" data-godown="All">All Godowns</button>`;
+    
+    GODOWNS.forEach(godown => {
+        container.insertAdjacentHTML("beforeend", `
+            <button class="godown-tab ${currentDeliveredGodown === godown.id ? "active" : ""}" data-godown="${godown.id}">
+                ${godown.label}
+            </button>
+        `);
+    });
+
+    container.querySelectorAll(".godown-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+            currentDeliveredGodown = tab.dataset.godown;
+            renderDeliveredGodownTabs();
+            renderDeliveredOrdersTable();
         });
     });
 }
@@ -314,6 +344,7 @@ async function loadOrders() {
     } finally {
         updateDashboard();
         renderOrdersTable();
+        renderDeliveredOrdersTable();
         syncShareSelection();
         renderShareOrdersPage();
         renderStockTable();
@@ -412,6 +443,7 @@ function navigateTo(targetId) {
 
     if (targetId === "dashboard") updateDashboard();
     if (targetId === "orders-list") renderOrdersTable();
+    if (targetId === "delivered-orders") renderDeliveredOrdersTable();
     if (targetId === "share-orders") renderShareOrdersPage();
     if (targetId === "stock") renderStockTable();
 
@@ -709,12 +741,16 @@ function renderOrdersTable() {
     const noOrders = document.getElementById("no-orders-message");
     if (!board || !noOrders) return;
 
-    const search = document.getElementById("search-orders").value.toLowerCase();
+    const searchInput = document.getElementById("search-orders");
+    const search = searchInput ? searchInput.value.toLowerCase().trim() : "";
     let matches = 0;
 
     board.innerHTML = "";
 
-    const filteredOrders = orders.filter(order => {
+    // Exclude delivered orders from the main active workflow desk
+    const activeOrders = (orders || []).filter(order => (order.status || "New") !== "Delivered");
+
+    const filteredOrders = activeOrders.filter(order => {
         const searchText = [
             order.id,
             order.agentName,
@@ -734,10 +770,9 @@ function renderOrdersTable() {
         const godownOrders = filteredOrders.filter(order => order.godownLocation === godown.id);
         matches += godownOrders.length;
 
-        const statusColumns = [...ACTIVE_STATUSES, "Delivered", "Returned"].map(status => {
+        const statusColumns = [...ACTIVE_STATUSES, "Returned"].map(status => {
             const statusOrders = godownOrders.filter(order => (order.status || "New") === status);
             let extClass = "";
-            if (status === "Delivered") extClass = "delivered-column";
             if (status === "Returned") extClass = "returned-column";
             
             return `
@@ -760,9 +795,71 @@ function renderOrdersTable() {
                         <h3>${escapeHtml(godown.label)}</h3>
                         <span>${escapeHtml(godown.group)}</span>
                     </div>
-                    <strong>${godownOrders.length} orders</strong>
+                    <strong>${godownOrders.length} active orders</strong>
                 </div>
                 <div class="order-columns">${statusColumns}</div>
+            </section>
+        `);
+    });
+
+    const isSearching = Boolean(search);
+    noOrders.classList.toggle("hide", !isSearching || matches > 0);
+    board.classList.remove("hide");
+}
+
+function renderDeliveredOrdersTable() {
+    const board = document.getElementById("delivered-orders-board");
+    const noOrders = document.getElementById("no-delivered-orders-message");
+    if (!board || !noOrders) return;
+
+    const searchInput = document.getElementById("search-delivered-orders");
+    const search = searchInput ? searchInput.value.toLowerCase().trim() : "";
+    let matches = 0;
+
+    board.innerHTML = "";
+
+    const deliveredOrders = (orders || []).filter(order => order.status === "Delivered");
+
+    const filteredOrders = deliveredOrders.filter(order => {
+        const searchText = [
+            order.id,
+            order.agentName,
+            order.customerName,
+            order.customerPhone,
+            order.deliveryArea,
+            order.locationLink,
+            order.godownLocation,
+            order.whatsappGroup
+        ].join(" ").toLowerCase();
+        return searchText.includes(search) &&
+            (currentDeliveredGodown === "All" || order.godownLocation === currentDeliveredGodown);
+    });
+
+    GODOWNS.forEach(godown => {
+        if (currentDeliveredGodown !== "All" && currentDeliveredGodown !== godown.id) return;
+        const godownOrders = filteredOrders.filter(order => order.godownLocation === godown.id);
+        matches += godownOrders.length;
+
+        board.insertAdjacentHTML("beforeend", `
+            <section class="godown-board">
+                <div class="godown-board-head">
+                    <div>
+                        <h3>${escapeHtml(godown.label)}</h3>
+                        <span>${escapeHtml(godown.group)}</span>
+                    </div>
+                    <strong style="color:#000000; font-weight:800;">${godownOrders.length} Delivered</strong>
+                </div>
+                <div class="order-columns" style="grid-template-columns: 1fr;">
+                    <div class="order-column delivered-column" style="background:#ffffff; border:1px solid #e2e2e8;">
+                        <div class="order-column-title" style="background:#000000; color:#ffffff;">
+                            <span><i class="fa-solid fa-circle-check" style="color:#ffffff;"></i> Delivered Orders</span>
+                            <b style="background:#ffffff; color:#000000;">${godownOrders.length}</b>
+                        </div>
+                        <div class="order-card-list">
+                            ${godownOrders.length ? godownOrders.map(renderOrderCard).join("") : '<div class="empty-column">No delivered orders</div>'}
+                        </div>
+                    </div>
+                </div>
             </section>
         `);
     });
@@ -1319,6 +1416,8 @@ window.updateOrderStatus = async function(orderId, status) {
     const previousStatus = order.status || "New";
     order.status = status;
     updateDashboard();
+    renderOrdersTable();
+    renderDeliveredOrdersTable();
     syncShareSelection();
     renderShareOrdersPage();
 
@@ -1329,14 +1428,16 @@ window.updateOrderStatus = async function(orderId, status) {
             .update({ status })
             .eq("id", orderId);
         if (error) throw error;
-        showToast("Status updated.");
+        showToast(`Status updated to ${status}.`);
         renderOrdersTable();
+        renderDeliveredOrdersTable();
         renderShareOrdersPage();
         renderStockTable();
     } catch (error) {
         order.status = previousStatus;
         updateDashboard();
         renderOrdersTable();
+        renderDeliveredOrdersTable();
         syncShareSelection();
         renderShareOrdersPage();
         showToast("Database rejected status update.", true);
