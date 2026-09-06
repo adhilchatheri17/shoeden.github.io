@@ -172,14 +172,19 @@ function setupLogin() {
 }
 
 async function checkLogin() {
-    if (!ensureSupabaseConfigured()) {
-        showLogin();
+    if (!SUPABASE_IS_CONFIGURED || !supabaseClient) {
+        showApp();
+        updateDashboard();
+        renderOrdersTable();
         return;
     }
 
     try {
         const { data, error } = await supabaseClient.auth.getSession();
-        if (error || !data.session) throw error || new Error("Not logged in");
+        if (error || !data?.session) {
+            showLogin();
+            return;
+        }
         showApp();
         await loadAppData();
     } catch (error) {
@@ -188,14 +193,15 @@ async function checkLogin() {
 }
 
 function showApp() {
-    appShell.classList.remove("auth-hidden");
-    loginScreen.classList.add("hide");
+    if (appShell) appShell.classList.remove("auth-hidden");
+    if (loginScreen) loginScreen.classList.add("hide");
 }
 
 function showLogin() {
-    appShell.classList.add("auth-hidden");
-    loginScreen.classList.remove("hide");
-    document.getElementById("loginUsername").focus();
+    if (appShell) appShell.classList.add("auth-hidden");
+    if (loginScreen) loginScreen.classList.remove("hide");
+    const userEl = document.getElementById("loginUsername");
+    if (userEl) userEl.focus();
 }
 
 function ensureSupabaseConfigured() {
@@ -294,46 +300,44 @@ function stockKey(product, color = "") {
 
 async function loadOrders() {
     try {
-        await requireSession();
-        const { data, error } = await supabaseClient
-            .from("orders")
-            .select("*")
-            .order("date", { ascending: false });
-        if (error) throw error;
-        orders = (data || []).map(fromDbOrder);
+        if (SUPABASE_IS_CONFIGURED && supabaseClient) {
+            const { data, error } = await supabaseClient
+                .from("orders")
+                .select("*")
+                .order("date", { ascending: false });
+            if (!error && data) {
+                orders = data.map(fromDbOrder);
+            }
+        }
+    } catch (error) {
+        console.warn("Could not load orders from Supabase:", error);
+    } finally {
         updateDashboard();
         renderOrdersTable();
         syncShareSelection();
         renderShareOrdersPage();
         renderStockTable();
-    } catch (error) {
-        showToast("Could not load orders from Supabase.", true);
-        updateDashboard();
     }
 }
 
 async function loadStocks() {
     try {
-        await requireSession();
-        const { data, error } = await supabaseClient
-            .from("godown_stocks")
-            .select("*")
-            .order("product", { ascending: true })
-            .order("color", { ascending: true })
-            .order("godown_location", { ascending: true });
-        if (error) throw error;
-        stockStorageAvailable = true;
-        stockStorageMessage = "";
-        stockSetupToastShown = false;
-        stocks = data || [];
-        renderStockTable();
+        if (SUPABASE_IS_CONFIGURED && supabaseClient) {
+            const { data, error } = await supabaseClient
+                .from("godown_stocks")
+                .select("*")
+                .order("product", { ascending: true })
+                .order("color", { ascending: true })
+                .order("godown_location", { ascending: true });
+            if (!error && data) {
+                stockStorageAvailable = true;
+                stockStorageMessage = "";
+                stocks = data;
+            }
+        }
     } catch (error) {
-        const tableMissing = error?.code === "PGRST205" || String(error?.message || "").includes("godown_stocks");
-        stockStorageAvailable = !tableMissing;
-        stockStorageMessage = tableMissing
-            ? "Stock setup is incomplete. Run the godown_stocks section in supabase-schema.sql from the Supabase SQL Editor."
-            : "Could not load stock from Supabase. Check the table policies and network connection.";
-        stocks = [];
+        console.warn("Could not load stock from Supabase:", error);
+    } finally {
         renderStockTable();
     }
 }
