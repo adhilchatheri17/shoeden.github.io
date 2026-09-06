@@ -726,8 +726,8 @@ function renderOrdersTable() {
     });
 
     GODOWNS.forEach(godown => {
+        if (currentOrdersGodown !== "All" && currentOrdersGodown !== godown.id) return;
         const godownOrders = filteredOrders.filter(order => order.godownLocation === godown.id);
-        if (!godownOrders.length && currentOrdersGodown !== godown.id) return;
         matches += godownOrders.length;
 
         const statusColumns = [...ACTIVE_STATUSES, "Delivered", "Returned"].map(status => {
@@ -763,8 +763,9 @@ function renderOrdersTable() {
         `);
     });
 
-    noOrders.classList.toggle("hide", matches > 0);
-    board.classList.toggle("hide", matches === 0);
+    const isSearching = Boolean(search);
+    noOrders.classList.toggle("hide", !isSearching || matches > 0);
+    board.classList.remove("hide");
 }
 
 function getShareCandidateOrders() {
