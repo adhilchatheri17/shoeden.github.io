@@ -1180,38 +1180,39 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .order-date-input {
   width: 100%;
-  min-height: 34px;
-  padding: 5px 8px;
+  min-height: 36px;
+  padding: 6px 10px;
   font-size: 0.82rem;
-  background: #ffffff;
-  border: 1px solid #cccccc;
-  border-radius: 6px;
-  color: #111111;
+  font-weight: 700;
+  background: #f2f2f5;
+  border: none;
+  border-radius: 10px;
+  color: #000000;
   color-scheme: light;
 }
 
 .order-date-input:focus {
-  border-color: #e50010;
-  box-shadow: 0 0 0 2px rgba(229, 0, 16, 0.15);
+  background: #eaeaea;
+  box-shadow: 0 0 0 2px #000000;
 }
 
 .influencer-card {
-  border: 1px solid #e50010;
-  background: #fff5f5;
+  border: 2px solid #000000 !important;
+  background: #ffffff;
   position: relative;
-  box-shadow: 0 4px 14px rgba(229, 0, 16, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .influencer-badge {
   display: inline-flex;
   align-items: center;
-  background: #e50010;
+  background: #000000;
   color: #ffffff;
   font-size: 0.7rem;
-  font-weight: 800;
+  font-weight: 900;
   text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
   margin-bottom: 10px;
   letter-spacing: 0.5px;
 }
@@ -1222,7 +1223,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .order-card-title {
   font-size: 1.05rem;
-  color: #111111;
+  color: #000000;
   font-weight: 900;
   word-break: break-word;
 }
@@ -1232,18 +1233,19 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   gap: 5px;
   margin-bottom: 12px;
   font-size: 0.85rem;
-  color: #444444;
+  color: #333333;
+  font-weight: 600;
 }
 
 .order-card-details i {
-  color: #666666;
+  color: #000000;
   width: 18px;
   text-align: center;
 }
 
 .order-card-details a {
-  color: #e50010;
-  font-weight: 800;
+  color: #000000;
+  font-weight: 900;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -1253,7 +1255,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   align-items: center;
   flex-wrap: wrap;
   padding: 8px 0;
-  border-bottom: 1px solid #e2e2e8;
+  border-bottom: 1px solid #f0f0f4;
   font-size: 0.9rem;
 }
 
@@ -1262,24 +1264,25 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .highlight-qty {
-  color: #666666;
+  color: #555555;
+  font-weight: 700;
   margin-right: 6px;
 }
 
 .highlight-product {
-  color: #111111;
-  font-weight: 700;
+  color: #000000;
+  font-weight: 800;
 }
 
 .highlight-color {
-  background: #f0f0f4;
-  color: #111111;
-  padding: 3px 7px;
-  border-radius: 4px;
+  background: #000000;
+  color: #ffffff;
+  padding: 3px 8px;
+  border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 800;
   margin-left: auto;
-  border: 1px solid #e2e2e8;
+  border: none;
 }
 
 .order-status-row {
@@ -1374,9 +1377,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .stock-scroll {
   overflow: auto;
   -webkit-overflow-scrolling: touch;
-  border: 1px solid #e2e2e8;
-  border-radius: 10px;
+  border: none;
+  border-radius: 18px;
   background: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
   touch-action: pan-x pan-y;
 }
 
@@ -1388,8 +1392,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .stock-table th,
 .stock-table td {
-  border-bottom: 1px solid #e2e2e8;
-  border-right: 1px solid #e2e2e8;
+  border-bottom: 1px solid #f0f0f4;
+  border-right: 1px solid #f0f0f4;
 }
 
 .stock-table th:last-child,
@@ -1402,8 +1406,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   position: sticky;
   left: 0;
   z-index: 1;
-  background: #f8f8fa;
-  color: #111111;
+  background: #f2f2f5;
+  color: #000000;
   font-weight: 800;
 }
 
@@ -1412,11 +1416,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .stock-subtotal-row {
-  background: #f0f0f4;
+  background: #e8e8ed;
 }
 
 .stock-subtotal-row td {
-  border-top: 2px solid #cccccc;
+  border-top: 2px solid #d0d0d5;
 }
 
 .stock-subtotal-cell {
@@ -1426,11 +1430,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .stock-subtotal-cell strong {
   font-size: 1.1rem;
-  color: #111111;
+  color: #000000;
+  font-weight: 900;
 }
 
 .stock-subtotal-row .stock-product {
-  background: #f0f0f4;
+  background: #e8e8ed;
 }
 
 .stock-cell {
@@ -1442,9 +1447,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .stock-cell input {
   min-height: 38px;
   padding: 8px;
-  background: #ffffff;
-  border: 1px solid #cccccc;
-  color: #111111;
+  background: #f2f2f5;
+  border: none;
+  border-radius: 10px;
+  color: #000000;
+  font-weight: 700;
 }
 
 .stock-metrics {
@@ -1454,11 +1461,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   gap: 6px;
   color: #666666;
   font-size: 0.76rem;
+  font-weight: 600;
 }
 
 .stock-metrics b,
 .stock-table td > strong {
-  color: #111111;
+  color: #000000;
+  font-weight: 800;
 }
 
 .stock-metrics b.low,
@@ -1468,7 +1477,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .stock-metrics b.negative,
 .stock-table td > strong.negative {
-  color: #e50010;
+  color: #dc2626;
 }
 
 .table-responsive {
