@@ -2653,3 +2653,118 @@ td span {
   flex-direction: column;
   gap: 12px;
 }
+
+/* ── Ultra-Compact Mobile Order Cards & Layout ── */
+@media (max-width: 768px) {
+  .order-columns {
+    grid-template-columns: repeat(5, minmax(230px, 1fr));
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+
+  .order-column {
+    min-width: 230px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .order-column-title {
+    font-size: 0.78rem;
+    margin-bottom: 8px;
+  }
+
+  .order-column-title b {
+    min-width: 22px;
+    height: 22px;
+    font-size: 0.72rem;
+  }
+
+  .order-card-v2 {
+    padding: 10px 12px;
+    border-radius: 14px;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .location-badge {
+    padding: 2px 8px;
+    font-size: 0.65rem;
+  }
+
+  .card-delete-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+
+  .agent-name {
+    font-size: 0.92rem;
+  }
+
+  .customer-phone {
+    font-size: 0.76rem;
+  }
+
+  .meta-item {
+    padding: 2px 8px;
+    font-size: 0.7rem;
+  }
+
+  .card-products {
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+
+  .product-line {
+    font-size: 0.78rem;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  .card-notes {
+    padding: 6px 10px;
+    font-size: 0.74rem;
+    border-radius: 8px;
+  }
+
+  .status-select-v2 {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    min-height: 28px;
+  }
+
+  .area-tag {
+    font-size: 0.72rem;
+    max-width: 100px;
+  }
+
+  .influencer-ribbon {
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    top: -6px;
+    right: -6px;
+  }
+
+  .empty-column {
+    min-height: 54px;
+    font-size: 0.78rem;
+    border-radius: 8px;
+  }
+
+  .godown-board {
+    padding: 8px;
+    border-radius: 14px;
+  }
+
+  .godown-board-head h3 {
+    font-size: 0.95rem;
+  }
+
+  .godown-board-head span {
+    font-size: 0.72rem;
+  }
+
+  .godown-board-head strong {
+    font-size: 0.78rem;
+  }
+}
