@@ -129,6 +129,10 @@ const navConfig = {
     "sales-report": {
         title: "Daily Sales & Collection Report",
         subtitle: "Everyday Cash & UPI collection breakdown by person and godown."
+    },
+    "influencer-orders": {
+        title: "Influencer Orders",
+        subtitle: "Track influencer collaborations and video upload statuses."
     }
 };
 
@@ -140,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupOrderForm();
     setupSharePage();
     renderSalesReport();
+    renderInfluencerOrders();
     addNewItem();
     setDefaultOrderDate();
     checkLogin();
@@ -447,6 +452,7 @@ function navigateTo(targetId) {
     if (targetId === "share-orders") renderShareOrdersPage();
     if (targetId === "stock") renderStockTable();
     if (targetId === "sales-report") renderSalesReport();
+    if (targetId === "influencer-orders") renderInfluencerOrders();
 
     // Close mobile sidebar
     document.getElementById("sidebar")?.classList.remove("open");
@@ -2342,5 +2348,173 @@ create policy "Logged in users can delete stock" on public.godown_stocks for del
         document.body.removeChild(area);
         showToast("Stock SQL copied! Paste in Supabase SQL Editor.");
     }
+};
+
+// ── INFLUENCER ORDERS STATE & MANAGERS ──
+let activeInfluencerTab = "pending"; // "pending", "uploaded", "all"
+let influencerOrders = JSON.parse(localStorage.getItem("shoeden_influencer_orders") || "[]");
+
+function saveInfluencerOrdersToStorage() {
+    localStorage.setItem("shoeden_influencer_orders", JSON.stringify(influencerOrders));
+}
+
+function renderInfluencerOrders() {
+    const tableBody = document.getElementById("influencer-table-body");
+    const searchVal = document.getElementById("search-influencer")?.value.toLowerCase().trim() || "";
+
+    // 1. Compute Metrics
+    const totalCount = influencerOrders.length;
+    const pendingCount = influencerOrders.filter(o => !o.videoUploaded).length;
+    const uploadedCount = influencerOrders.filter(o => o.videoUploaded).length;
+
+    const totalEl = document.getElementById("inf-total-count");
+    const pendingEl = document.getElementById("inf-pending-count");
+    const uploadedEl = document.getElementById("inf-uploaded-count");
+
+    if (totalEl) totalEl.textContent = totalCount;
+    if (pendingEl) pendingEl.textContent = pendingCount;
+    if (uploadedEl) uploadedEl.textContent = uploadedCount;
+
+    // 2. Filter Entries
+    let filtered = influencerOrders.filter(entry => {
+        if (activeInfluencerTab === "pending" && entry.videoUploaded) return false;
+        if (activeInfluencerTab === "uploaded" && !entry.videoUploaded) return false;
+        if (searchVal) {
+            const matchName = (entry.name || "").toLowerCase().includes(searchVal);
+            const matchPhone = (entry.phone || "").includes(searchVal);
+            const matchProduct = (entry.product || "").toLowerCase().includes(searchVal);
+            if (!matchName && !matchPhone && !matchProduct) return false;
+        }
+        return true;
+    });
+
+    // Sort by Date descending
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // 3. Render Rows
+    if (tableBody) {
+        if (filtered.length === 0) {
+            let emptyMsg = "No influencer orders found.";
+            if (activeInfluencerTab === "pending") emptyMsg = "No pending video orders! Click '+ New Influencer Order' to log one.";
+            if (activeInfluencerTab === "uploaded") emptyMsg = "No videos uploaded yet. Tick the checkbox option on a pending order to move it here!";
+
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 32px; color: #64748b; font-weight: 600;">${emptyMsg}</td></tr>`;
+        } else {
+            tableBody.innerHTML = filtered.map(entry => {
+                const isUploaded = !!entry.videoUploaded;
+
+                return `
+                    <tr>
+                        <td><strong>${escapeHtml(entry.date)}</strong></td>
+                        <td><strong style="color:#0f172a; font-size:0.95rem;"><i class="fa-solid fa-user-gear" style="color:#6366f1; margin-right:6px;"></i>${escapeHtml(entry.name)}</strong></td>
+                        <td>
+                            <a href="tel:${escapeHtml(entry.phone)}" style="color:#2563eb; text-decoration:none; font-weight:700;">
+                                <i class="fa-solid fa-phone" style="font-size:0.75rem; margin-right:4px;"></i>${escapeHtml(entry.phone)}
+                            </a>
+                        </td>
+                        <td>${escapeHtml(entry.product || "--")}</td>
+                        <td>
+                            <label style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; background:${isUploaded ? '#ecfdf5' : '#fffbeb'}; border:1px solid ${isUploaded ? '#a7f3d0' : '#fde68a'}; padding:6px 12px; border-radius:10px;">
+                                <input type="checkbox" ${isUploaded ? "checked" : ""} onchange="toggleInfluencerVideoStatus('${jsString(entry.id)}', this.checked)" style="width:18px; height:18px; cursor:pointer; accent-color:#059669;">
+                                <span style="font-weight:700; font-size:0.82rem; color:${isUploaded ? '#047857' : '#b45309'};">
+                                    ${isUploaded ? "Video Uploaded ✓" : "Pending Video"}
+                                </span>
+                            </label>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-compact btn-secondary" onclick="deleteInfluencerOrder('${jsString(entry.id)}')" title="Delete order" style="padding: 4px 8px; color: #dc2626;">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+    }
+}
+
+window.switchInfluencerTab = function(tabKey) {
+    activeInfluencerTab = tabKey;
+    const tabsContainer = document.getElementById("influencer-status-tabs");
+    if (tabsContainer) {
+        tabsContainer.querySelectorAll(".sales-person-tab").forEach(btn => {
+            const isClick = btn.getAttribute("onclick")?.includes(tabKey);
+            btn.classList.toggle("active", isClick);
+        });
+    }
+    renderInfluencerOrders();
+};
+
+window.toggleAddInfluencerForm = function(forceShow) {
+    const card = document.getElementById("inline-influencer-form-card");
+    const toggleBtnText = document.getElementById("toggle-influencer-form-text");
+    if (!card) return;
+
+    const isHidden = card.classList.contains("hide");
+    const shouldShow = forceShow !== undefined ? forceShow : isHidden;
+
+    if (shouldShow) {
+        const nameInput = document.getElementById("inf-name");
+        const phoneInput = document.getElementById("inf-phone");
+        const dateInput = document.getElementById("inf-date");
+        const productInput = document.getElementById("inf-product");
+        const videoCheckbox = document.getElementById("inf-video-uploaded");
+
+        if (dateInput) dateInput.value = new Date().toISOString().split("T")[0];
+        if (nameInput) nameInput.value = "";
+        if (phoneInput) phoneInput.value = "";
+        if (productInput) productInput.value = "";
+        if (videoCheckbox) videoCheckbox.checked = false;
+
+        card.classList.remove("hide");
+        if (toggleBtnText) toggleBtnText.textContent = "Close Form";
+    } else {
+        card.classList.add("hide");
+        if (toggleBtnText) toggleBtnText.textContent = "+ New Influencer Order";
+    }
+};
+
+window.saveInfluencerOrder = function(event) {
+    event.preventDefault();
+    const name = document.getElementById("inf-name")?.value.trim();
+    const phone = document.getElementById("inf-phone")?.value.trim();
+    const date = document.getElementById("inf-date")?.value;
+    const product = document.getElementById("inf-product")?.value.trim();
+    const videoUploaded = document.getElementById("inf-video-uploaded")?.checked || false;
+
+    if (!name || !phone || !date) return;
+
+    const newEntry = {
+        id: "inf-" + Date.now(),
+        name,
+        phone,
+        date,
+        product,
+        videoUploaded
+    };
+
+    influencerOrders.push(newEntry);
+    saveInfluencerOrdersToStorage();
+    toggleAddInfluencerForm(false);
+    showToast(`Influencer order logged for ${name}.`);
+    renderInfluencerOrders();
+};
+
+window.toggleInfluencerVideoStatus = function(id, isUploaded) {
+    const entry = influencerOrders.find(o => o.id === id);
+    if (entry) {
+        entry.videoUploaded = isUploaded;
+        saveInfluencerOrdersToStorage();
+        showToast(isUploaded ? `Video marked as Uploaded for ${entry.name}!` : `Moved ${entry.name} back to Pending Video Area.`);
+        renderInfluencerOrders();
+    }
+};
+
+window.deleteInfluencerOrder = function(id) {
+    if (!confirm("Delete this influencer order record?")) return;
+    influencerOrders = influencerOrders.filter(o => o.id !== id);
+    saveInfluencerOrdersToStorage();
+    showToast("Influencer order record deleted.");
+    renderInfluencerOrders();
 };
 
