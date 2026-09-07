@@ -14,7 +14,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=8000">
+    <link rel="stylesheet" href="styles.css?v=9000">
 </head>
 
 <body>
@@ -98,9 +98,9 @@
                     <i class="fa-solid fa-warehouse"></i>
                     <span>Stock</span>
                 </button>
-                <button class="nav-item" data-target="catalog">
-                    <i class="fa-solid fa-boxes-stacked"></i>
-                    <span>Catalog</span>
+                <button class="nav-item" data-target="sales-report">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Sales Report</span>
                 </button>
             </nav>
 
@@ -135,9 +135,9 @@
                 <i class="fa-solid fa-warehouse"></i>
                 <span>Stock</span>
             </button>
-            <button class="mobile-nav-btn" data-target="catalog">
-                <i class="fa-solid fa-boxes-stacked"></i>
-                <span>Catalog</span>
+            <button class="mobile-nav-btn" data-target="sales-report">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Sales</span>
             </button>
         </nav>
 
@@ -526,17 +526,167 @@
                     </div>
                 </section>
 
-                <section id="catalog" class="view-section hide">
-                    <div class="panel">
-                        <div class="panel-heading">
-                            <h3>Product Catalog</h3>
-                            <span>Rules used by the order form</span>
+                <!-- Daily Sales & Collection Report Section -->
+                <section id="sales-report" class="view-section hide">
+                    <!-- Top Action Header -->
+                    <div class="sales-banner-card">
+                        <div class="sales-banner-info">
+                            <h3><i class="fa-solid fa-file-invoice-dollar"></i> Everyday Sales Collection Report</h3>
+                            <p>Track cash & UPI collections godown-wise and person-wise (Rafeeq, Shuhaib, Shanu, Madurai, Kanyakumari)</p>
                         </div>
-                        <div class="catalog-grid" id="catalog-grid"></div>
+                        <div class="sales-banner-actions">
+                            <button class="btn btn-primary btn-compact" onclick="openAddSalesModal()">
+                                <i class="fa-solid fa-circle-plus"></i>
+                                <span>Add Daily Collection</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Summary KPI Cards -->
+                    <div class="sales-kpi-grid">
+                        <div class="sales-kpi-card grand-total">
+                            <div class="sales-kpi-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                            <div class="sales-kpi-info">
+                                <span>Total Collection</span>
+                                <strong id="sales-total-amount">₹0</strong>
+                                <small id="sales-total-entries">0 Days Logged</small>
+                            </div>
+                        </div>
+
+                        <div class="sales-kpi-card cash-card">
+                            <div class="sales-kpi-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                            <div class="sales-kpi-info">
+                                <span>Cash Collection</span>
+                                <strong id="sales-cash-amount">₹0</strong>
+                                <small id="sales-cash-percent">0% of total</small>
+                            </div>
+                        </div>
+
+                        <div class="sales-kpi-card upi-card">
+                            <div class="sales-kpi-icon"><i class="fa-solid fa-qrcode"></i></div>
+                            <div class="sales-kpi-info">
+                                <span>UPI Collection</span>
+                                <strong id="sales-upi-amount">₹0</strong>
+                                <small id="sales-upi-percent">0% of total</small>
+                            </div>
+                        </div>
+
+                        <div class="sales-kpi-card person-card">
+                            <div class="sales-kpi-icon"><i class="fa-solid fa-user-check"></i></div>
+                            <div class="sales-kpi-info">
+                                <span>Top Collector</span>
+                                <strong id="sales-top-person">--</strong>
+                                <small id="sales-top-person-amount">₹0 Total</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Reporting Charts Bar & Pie -->
+                    <div class="sales-charts-grid">
+                        <div class="panel chart-panel">
+                            <div class="panel-heading">
+                                <h4><i class="fa-solid fa-chart-column"></i> Daily Cash vs UPI Breakdown</h4>
+                                <span>Comparison of Cash and Digital Payments</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="salesTrendChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="panel chart-panel">
+                            <div class="panel-heading">
+                                <h4><i class="fa-solid fa-chart-pie"></i> Payment Mode Share</h4>
+                                <span>Cash vs UPI Distribution</span>
+                            </div>
+                            <div class="chart-container pie-container">
+                                <canvas id="salesRatioChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Godown Person Tabs & Data Log Table -->
+                    <div class="panel sales-list-panel">
+                        <div class="sales-tab-bar">
+                            <div class="sales-person-tabs" id="sales-person-tabs">
+                                <!-- Dynamic tabs generated by app.js: All, Rafeeq, Shuhaib, Shanu, etc. -->
+                            </div>
+                        </div>
+
+                        <div class="sales-table-toolbar">
+                            <div class="search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="search-sales" placeholder="Filter by date, person, or godown..." oninput="renderSalesReport()">
+                            </div>
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table class="sales-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Person / Godown</th>
+                                        <th>Cash (₹)</th>
+                                        <th>UPI (₹)</th>
+                                        <th>Daily Total (₹)</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sales-table-body"></tbody>
+                                <tfoot id="sales-table-foot"></tfoot>
+                            </table>
+                        </div>
                     </div>
                 </section>
             </div>
         </main>
+    </div>
+
+    <!-- Modal for Logging Daily Sales Entry -->
+    <div id="add-sales-modal" class="modal hide">
+        <div class="modal-content sales-modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-cash-register"></i> Log Daily Sales Collection</h3>
+                <button class="modal-close" onclick="closeAddSalesModal()">&times;</button>
+            </div>
+            <form id="sales-entry-form" onsubmit="saveSalesEntry(event)">
+                <div class="form-row-compact">
+                    <div class="form-group">
+                        <label for="sales-date">Collection Date *</label>
+                        <input type="date" id="sales-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sales-person">Person / Godown *</label>
+                        <select id="sales-person" required>
+                            <option value="Rafeeq">Rafeeq (Chennai Hub)</option>
+                            <option value="Shuhaib">Shuhaib (Erode Hub)</option>
+                            <option value="Shanu">Shanu (Kallakurichi Hub)</option>
+                            <option value="Madurai Team">Madurai Team</option>
+                            <option value="Kanyakumari Team">Kanyakumari Team</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row-compact">
+                    <div class="form-group">
+                        <label for="sales-cash">Cash Collection (₹) *</label>
+                        <input type="number" id="sales-cash" min="0" placeholder="0" oninput="calcDailyTotalPreview()" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sales-upi">UPI Collection (₹) *</label>
+                        <input type="number" id="sales-upi" min="0" placeholder="0" oninput="calcDailyTotalPreview()" required>
+                    </div>
+                </div>
+
+                <div class="sales-preview-box">
+                    <span>Calculated Daily Total:</span>
+                    <strong id="sales-preview-total">₹0</strong>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddSalesModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Entry</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div id="toast" class="toast">
@@ -570,8 +720,9 @@
     </template>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=8000"></script>
+    <script src="app.js?v=9000"></script>
 </body>
 
 </html>

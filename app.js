@@ -126,9 +126,9 @@ const navConfig = {
         title: "Stock",
         subtitle: "Manage each godown stock and see dispatched pending delivery."
     },
-    catalog: {
-        title: "Catalog",
-        subtitle: "Products, colors, and shoe pair capacities used by the system."
+    "sales-report": {
+        title: "Daily Sales & Collection Report",
+        subtitle: "Everyday Cash & UPI collection breakdown by person and godown."
     }
 };
 
@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupMobileNav();
     setupOrderForm();
     setupSharePage();
-    renderCatalog();
+    renderSalesReport();
     addNewItem();
     setDefaultOrderDate();
     checkLogin();
@@ -446,6 +446,7 @@ function navigateTo(targetId) {
     if (targetId === "delivered-orders") renderDeliveredOrdersTable();
     if (targetId === "share-orders") renderShareOrdersPage();
     if (targetId === "stock") renderStockTable();
+    if (targetId === "sales-report") renderSalesReport();
 
     // Close mobile sidebar
     document.getElementById("sidebar")?.classList.remove("open");
@@ -1758,22 +1759,329 @@ window.exportData = function() {
     URL.revokeObjectURL(url);
 };
 
-function renderCatalog() {
-    const container = document.getElementById("catalog-grid");
-    container.innerHTML = "";
-    Object.entries(INVENTORY_CONFIG).forEach(([key, product]) => {
-        container.insertAdjacentHTML("beforeend", `
-            <article class="catalog-card">
-                <span>${escapeHtml(product.category)}</span>
-                <h3>${escapeHtml(product.name)}</h3>
-                <p>${product.capacityPairs ? `${product.capacityPairs} pairs capacity` : "Foldable furniture item"}</p>
-                <div class="color-list">
-                    ${product.colors.length ? product.colors.map(color => `<b>${escapeHtml(color)}</b>`).join("") : "<b>No color selection</b>"}
-                </div>
-            </article>
-        `);
-    });
+// ── DAILY SALES REPORT STATE & MANAGERS ──
+let activeSalesPersonTab = "All";
+let salesTrendChartInstance = null;
+let salesRatioChartInstance = null;
+
+const DEFAULT_SALES_REPORTS = [
+    { id: "sale-1", date: "2026-09-01", person: "Rafeeq", cash: 10072, upi: 33500 },
+    { id: "sale-2", date: "2026-09-03", person: "Rafeeq", cash: 41660, upi: 20500 },
+    { id: "sale-3", date: "2026-09-04", person: "Rafeeq", cash: 7520,  upi: 57300 },
+    { id: "sale-4", date: "2026-09-05", person: "Rafeeq", cash: 2560,  upi: 45900 },
+    { id: "sale-5", date: "2026-09-06", person: "Rafeeq", cash: 1840,  upi: 61500 },
+
+    { id: "sale-6", date: "2026-09-01", person: "Shuhaib", cash: 14200, upi: 29000 },
+    { id: "sale-7", date: "2026-09-02", person: "Shuhaib", cash: 22100, upi: 35400 },
+    { id: "sale-8", date: "2026-09-04", person: "Shuhaib", cash: 8900,  upi: 48000 },
+
+    { id: "sale-9",  date: "2026-09-01", person: "Shanu", cash: 9800,  upi: 24500 },
+    { id: "sale-10", date: "2026-09-03", person: "Shanu", cash: 16500, upi: 41000 },
+    { id: "sale-11", date: "2026-09-05", person: "Shanu", cash: 12400, upi: 31200 }
+];
+
+let salesReports = JSON.parse(localStorage.getItem("shoeden_sales_reports") || "null") || DEFAULT_SALES_REPORTS;
+
+function saveSalesReportsToStorage() {
+    localStorage.setItem("shoeden_sales_reports", JSON.stringify(salesReports));
 }
+
+function formatINR(amount) {
+    return "₹" + Number(amount || 0).toLocaleString("en-IN");
+}
+
+function renderSalesReport() {
+    const tableBody = document.getElementById("sales-table-body");
+    const tableFoot = document.getElementById("sales-table-foot");
+    const tabsContainer = document.getElementById("sales-person-tabs");
+    const searchVal = document.getElementById("search-sales")?.value.toLowerCase().trim() || "";
+
+    // 1. Unique Persons for Tabs
+    const personList = ["All", ...new Set([
+        "Rafeeq", "Shuhaib", "Shanu", "Madurai Team", "Kanyakumari Team",
+        ...salesReports.map(s => s.person)
+    ])];
+
+    if (tabsContainer) {
+        tabsContainer.innerHTML = personList.map(person => {
+            const activeCls = activeSalesPersonTab === person ? "active" : "";
+            return `<button type="button" class="sales-person-tab ${activeCls}" onclick="switchSalesPersonTab('${jsString(person)}')">${escapeHtml(person)}</button>`;
+        }).join("");
+    }
+
+    // 2. Filter Sales Entries
+    let filtered = salesReports.filter(entry => {
+        if (activeSalesPersonTab !== "All" && entry.person !== activeSalesPersonTab) return false;
+        if (searchVal) {
+            const queryMatch = entry.person.toLowerCase().includes(searchVal) || entry.date.includes(searchVal);
+            if (!queryMatch) return false;
+        }
+        return true;
+    });
+
+    // Sort by Date descending
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // 3. Compute Metrics
+    let totalCash = 0;
+    let totalUpi = 0;
+    const personTotals = {};
+
+    salesReports.forEach(entry => {
+        const cash = Number(entry.cash) || 0;
+        const upi = Number(entry.upi) || 0;
+        totalCash += cash;
+        totalUpi += upi;
+        personTotals[entry.person] = (personTotals[entry.person] || 0) + (cash + upi);
+    });
+
+    const grandTotal = totalCash + totalUpi;
+    const cashPercent = grandTotal > 0 ? Math.round((totalCash / grandTotal) * 100) : 0;
+    const upiPercent = grandTotal > 0 ? Math.round((totalUpi / grandTotal) * 100) : 0;
+
+    let topPerson = "--";
+    let topPersonAmount = 0;
+    Object.entries(personTotals).forEach(([person, amount]) => {
+        if (amount > topPersonAmount) {
+            topPersonAmount = amount;
+            topPerson = person;
+        }
+    });
+
+    // Update KPI Cards
+    const totalEl = document.getElementById("sales-total-amount");
+    const totalEntriesEl = document.getElementById("sales-total-entries");
+    const cashEl = document.getElementById("sales-cash-amount");
+    const cashPctEl = document.getElementById("sales-cash-percent");
+    const upiEl = document.getElementById("sales-upi-amount");
+    const upiPctEl = document.getElementById("sales-upi-percent");
+    const topPersonEl = document.getElementById("sales-top-person");
+    const topPersonAmtEl = document.getElementById("sales-top-person-amount");
+
+    if (totalEl) totalEl.textContent = formatINR(grandTotal);
+    if (totalEntriesEl) totalEntriesEl.textContent = `${salesReports.length} Days Logged`;
+    if (cashEl) cashEl.textContent = formatINR(totalCash);
+    if (cashPctEl) cashPctEl.textContent = `${cashPercent}% of total`;
+    if (upiEl) upiEl.textContent = formatINR(totalUpi);
+    if (upiPctEl) upiPctEl.textContent = `${upiPercent}% of total`;
+    if (topPersonEl) topPersonEl.textContent = topPerson;
+    if (topPersonAmtEl) topPersonAmtEl.textContent = `${formatINR(topPersonAmount)} Total`;
+
+    // 4. Render Table Rows
+    if (tableBody) {
+        if (filtered.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 24px; color: #64748b;">No sales records found.</td></tr>`;
+        } else {
+            tableBody.innerHTML = filtered.map(entry => {
+                const cash = Number(entry.cash) || 0;
+                const upi = Number(entry.upi) || 0;
+                const dailyTotal = cash + upi;
+                const badgeClass = entry.person.toLowerCase().replace(/[^a-z]/g, "");
+
+                return `
+                    <tr>
+                        <td><strong>${escapeHtml(entry.date)}</strong></td>
+                        <td><span class="person-badge ${badgeClass}"><i class="fa-solid fa-user"></i> ${escapeHtml(entry.person)}</span></td>
+                        <td><span style="color:#d97706; font-weight:700;">${formatINR(cash)}</span></td>
+                        <td><span style="color:#2563eb; font-weight:700;">${formatINR(upi)}</span></td>
+                        <td><strong style="color:#059669; font-size: 0.95rem;">${formatINR(dailyTotal)}</strong></td>
+                        <td>
+                            <button type="button" class="btn btn-compact btn-secondary" onclick="deleteSalesEntry('${jsString(entry.id)}')" title="Delete entry" style="padding: 4px 8px; color: #dc2626;">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+    }
+
+    // Table Footer Summary
+    if (tableFoot) {
+        let pageCash = 0;
+        let pageUpi = 0;
+        filtered.forEach(e => { pageCash += Number(e.cash) || 0; pageUpi += Number(e.upi) || 0; });
+        const pageTotal = pageCash + pageUpi;
+
+        tableFoot.innerHTML = `
+            <tr>
+                <td colspan="2">TOTAL (${filtered.length} Entries)</td>
+                <td style="color:#d97706">${formatINR(pageCash)}</td>
+                <td style="color:#2563eb">${formatINR(pageUpi)}</td>
+                <td style="color:#059669">${formatINR(pageTotal)}</td>
+                <td></td>
+            </tr>
+        `;
+    }
+
+    // 5. Update Charts
+    updateSalesCharts();
+}
+
+window.switchSalesPersonTab = function(person) {
+    activeSalesPersonTab = person;
+    renderSalesReport();
+};
+
+function updateSalesCharts() {
+    if (typeof Chart === "undefined") return;
+
+    // Group sales data by date
+    const dateMap = {};
+    salesReports.forEach(entry => {
+        if (!dateMap[entry.date]) {
+            dateMap[entry.date] = { cash: 0, upi: 0 };
+        }
+        dateMap[entry.date].cash += Number(entry.cash) || 0;
+        dateMap[entry.date].upi += Number(entry.upi) || 0;
+    });
+
+    const datesSorted = Object.keys(dateMap).sort((a, b) => new Date(a) - new Date(b));
+    const cashData = datesSorted.map(d => dateMap[d].cash);
+    const upiData = datesSorted.map(d => dateMap[d].upi);
+
+    // Render Trend Bar Chart
+    const trendCtx = document.getElementById("salesTrendChart")?.getContext("2d");
+    if (trendCtx) {
+        if (salesTrendChartInstance) salesTrendChartInstance.destroy();
+
+        salesTrendChartInstance = new Chart(trendCtx, {
+            type: "bar",
+            data: {
+                labels: datesSorted,
+                datasets: [
+                    {
+                        label: "Cash Collection (₹)",
+                        data: cashData,
+                        backgroundColor: "#f59e0b",
+                        borderRadius: 6
+                    },
+                    {
+                        label: "UPI Collection (₹)",
+                        data: upiData,
+                        backgroundColor: "#3b82f6",
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: "top" }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value => "₹" + value.toLocaleString("en-IN")
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Render Payment Ratio Pie Chart
+    const ratioCtx = document.getElementById("salesRatioChart")?.getContext("2d");
+    if (ratioCtx) {
+        if (salesRatioChartInstance) salesRatioChartInstance.destroy();
+
+        let totalCashAll = salesReports.reduce((sum, e) => sum + (Number(e.cash) || 0), 0);
+        let totalUpiAll = salesReports.reduce((sum, e) => sum + (Number(e.upi) || 0), 0);
+
+        salesRatioChartInstance = new Chart(ratioCtx, {
+            type: "doughnut",
+            data: {
+                labels: ["Cash Collection", "UPI Collection"],
+                datasets: [
+                    {
+                        data: [totalCashAll, totalUpiAll],
+                        backgroundColor: ["#f59e0b", "#3b82f6"],
+                        borderWidth: 2,
+                        borderColor: "#ffffff"
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: "bottom" }
+                }
+            }
+        });
+    }
+}
+
+window.openAddSalesModal = function() {
+    const modal = document.getElementById("add-sales-modal");
+    const dateInput = document.getElementById("sales-date");
+    if (modal) modal.classList.remove("hide");
+    if (dateInput) dateInput.value = new Date().toISOString().split("T")[0];
+    calcDailyTotalPreview();
+};
+
+window.closeAddSalesModal = function() {
+    const modal = document.getElementById("add-sales-modal");
+    if (modal) modal.classList.add("hide");
+};
+
+window.calcDailyTotalPreview = function() {
+    const cash = Number(document.getElementById("sales-cash")?.value) || 0;
+    const upi = Number(document.getElementById("sales-upi")?.value) || 0;
+    const previewEl = document.getElementById("sales-preview-total");
+    if (previewEl) previewEl.textContent = formatINR(cash + upi);
+};
+
+window.saveSalesEntry = function(event) {
+    event.preventDefault();
+    const date = document.getElementById("sales-date")?.value;
+    const person = document.getElementById("sales-person")?.value;
+    const cash = Number(document.getElementById("sales-cash")?.value) || 0;
+    const upi = Number(document.getElementById("sales-upi")?.value) || 0;
+
+    if (!date || !person) return;
+
+    const newEntry = {
+        id: "sale-" + Date.now(),
+        date,
+        person,
+        cash,
+        upi
+    };
+
+    salesReports.push(newEntry);
+    saveSalesReportsToStorage();
+    closeAddSalesModal();
+    showToast(`Sales collection logged for ${person}.`);
+    renderSalesReport();
+};
+
+window.deleteSalesEntry = function(id) {
+    if (!confirm("Delete this sales entry?")) return;
+    salesReports = salesReports.filter(e => e.id !== id);
+    saveSalesReportsToStorage();
+    showToast("Sales entry deleted.");
+    renderSalesReport();
+};
+
+window.exportSalesReport = function() {
+    let csvContent = "data:text/csv;charset=utf-8,Date,Person/Godown,Cash (INR),UPI (INR),Daily Total (INR)\n";
+    salesReports.forEach(e => {
+        const row = [e.date, e.person, e.cash, e.upi, Number(e.cash) + Number(e.upi)].join(",");
+        csvContent += row + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `shoeden_sales_report_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+};
 
 function toDbOrder(order) {
     // Pack extra fields into notes to avoid DB schema breaking
