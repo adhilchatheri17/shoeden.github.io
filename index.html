@@ -14,7 +14,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=9000">
+    <link rel="stylesheet" href="styles.css?v=9001">
 </head>
 
 <body>
@@ -654,15 +654,16 @@
                         <input type="date" id="sales-date" required>
                     </div>
                     <div class="form-group">
-                        <label for="sales-person">Person / Godown *</label>
-                        <select id="sales-person" required>
-                            <option value="Rafeeq">Rafeeq (Chennai Hub)</option>
-                            <option value="Shuhaib">Shuhaib (Erode Hub)</option>
-                            <option value="Shanu">Shanu (Kallakurichi Hub)</option>
-                            <option value="Madurai Team">Madurai Team</option>
-                            <option value="Kanyakumari Team">Kanyakumari Team</option>
+                        <label for="sales-person">Person / Godown Team *</label>
+                        <select id="sales-person" onchange="handleSalesPersonChange(this)" required>
+                            <!-- Dynamically populated by app.js -->
                         </select>
                     </div>
+                </div>
+
+                <div class="form-group hide" id="custom-person-group">
+                    <label for="sales-person-custom">New Person / Team Name *</label>
+                    <input type="text" id="sales-person-custom" placeholder="Type new person or team name...">
                 </div>
 
                 <div class="form-row-compact">
@@ -722,7 +723,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=9000"></script>
+    <script src="app.js?v=9001"></script>
 </body>
 
 </html>

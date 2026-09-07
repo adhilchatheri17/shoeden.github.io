@@ -1764,23 +1764,13 @@ let activeSalesPersonTab = "All";
 let salesTrendChartInstance = null;
 let salesRatioChartInstance = null;
 
-const DEFAULT_SALES_REPORTS = [
-    { id: "sale-1", date: "2026-09-01", person: "Rafeeq", cash: 10072, upi: 33500 },
-    { id: "sale-2", date: "2026-09-03", person: "Rafeeq", cash: 41660, upi: 20500 },
-    { id: "sale-3", date: "2026-09-04", person: "Rafeeq", cash: 7520,  upi: 57300 },
-    { id: "sale-4", date: "2026-09-05", person: "Rafeeq", cash: 2560,  upi: 45900 },
-    { id: "sale-5", date: "2026-09-06", person: "Rafeeq", cash: 1840,  upi: 61500 },
+const DEFAULT_PERSONS = ["Rafeeq", "Shuhaib", "Shanu", "Madurai Team", "Kanyakumari Team"];
+let savedPersons = JSON.parse(localStorage.getItem("shoeden_sales_persons") || "null") || DEFAULT_PERSONS;
+let salesReports = JSON.parse(localStorage.getItem("shoeden_sales_reports") || "[]");
 
-    { id: "sale-6", date: "2026-09-01", person: "Shuhaib", cash: 14200, upi: 29000 },
-    { id: "sale-7", date: "2026-09-02", person: "Shuhaib", cash: 22100, upi: 35400 },
-    { id: "sale-8", date: "2026-09-04", person: "Shuhaib", cash: 8900,  upi: 48000 },
-
-    { id: "sale-9",  date: "2026-09-01", person: "Shanu", cash: 9800,  upi: 24500 },
-    { id: "sale-10", date: "2026-09-03", person: "Shanu", cash: 16500, upi: 41000 },
-    { id: "sale-11", date: "2026-09-05", person: "Shanu", cash: 12400, upi: 31200 }
-];
-
-let salesReports = JSON.parse(localStorage.getItem("shoeden_sales_reports") || "null") || DEFAULT_SALES_REPORTS;
+function savePersonsToStorage() {
+    localStorage.setItem("shoeden_sales_persons", JSON.stringify(savedPersons));
+}
 
 function saveSalesReportsToStorage() {
     localStorage.setItem("shoeden_sales_reports", JSON.stringify(salesReports));
@@ -1798,7 +1788,7 @@ function renderSalesReport() {
 
     // 1. Unique Persons for Tabs
     const personList = ["All", ...new Set([
-        "Rafeeq", "Shuhaib", "Shanu", "Madurai Team", "Kanyakumari Team",
+        ...savedPersons,
         ...salesReports.map(s => s.person)
     ])];
 
@@ -1870,7 +1860,7 @@ function renderSalesReport() {
     // 4. Render Table Rows
     if (tableBody) {
         if (filtered.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 24px; color: #64748b;">No sales records found.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 32px; color: #64748b; font-weight: 600;">No sales records logged yet.<br><small style="color:#94a3b8;">Click 'Add Daily Collection' button above to log cash and UPI entries manually.</small></td></tr>`;
         } else {
             tableBody.innerHTML = filtered.map(entry => {
                 const cash = Number(entry.cash) || 0;
@@ -1948,17 +1938,17 @@ function updateSalesCharts() {
         salesTrendChartInstance = new Chart(trendCtx, {
             type: "bar",
             data: {
-                labels: datesSorted,
+                labels: datesSorted.length ? datesSorted : ["No Data"],
                 datasets: [
                     {
                         label: "Cash Collection (₹)",
-                        data: cashData,
+                        data: cashData.length ? cashData : [0],
                         backgroundColor: "#f59e0b",
                         borderRadius: 6
                     },
                     {
                         label: "UPI Collection (₹)",
-                        data: upiData,
+                        data: upiData.length ? upiData : [0],
                         backgroundColor: "#3b82f6",
                         borderRadius: 6
                     }
@@ -1997,8 +1987,8 @@ function updateSalesCharts() {
                 labels: ["Cash Collection", "UPI Collection"],
                 datasets: [
                     {
-                        data: [totalCashAll, totalUpiAll],
-                        backgroundColor: ["#f59e0b", "#3b82f6"],
+                        data: totalCashAll || totalUpiAll ? [totalCashAll, totalUpiAll] : [1, 1],
+                        backgroundColor: totalCashAll || totalUpiAll ? ["#f59e0b", "#3b82f6"] : ["#cbd5e1", "#e2e8f0"],
                         borderWidth: 2,
                         borderColor: "#ffffff"
                     }
@@ -2015,11 +2005,49 @@ function updateSalesCharts() {
     }
 }
 
+function populateSalesPersonDropdown() {
+    const selectEl = document.getElementById("sales-person");
+    if (!selectEl) return;
+    const customGroup = document.getElementById("custom-person-group");
+    const customInput = document.getElementById("sales-person-custom");
+    if (customGroup) customGroup.classList.add("hide");
+    if (customInput) {
+        customInput.value = "";
+        customInput.removeAttribute("required");
+    }
+
+    const uniquePersons = [...new Set([...savedPersons, ...salesReports.map(s => s.person)])];
+    selectEl.innerHTML = `
+        <option value="" disabled selected>Select person or team</option>
+        ${uniquePersons.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("")}
+        <option value="__NEW__">+ Add New Person / Team...</option>
+    `;
+}
+
+window.handleSalesPersonChange = function(selectEl) {
+    const customGroup = document.getElementById("custom-person-group");
+    const customInput = document.getElementById("sales-person-custom");
+    if (selectEl.value === "__NEW__") {
+        if (customGroup) customGroup.classList.remove("hide");
+        if (customInput) customInput.setAttribute("required", "required");
+    } else {
+        if (customGroup) customGroup.classList.add("hide");
+        if (customInput) customInput.removeAttribute("required");
+    }
+};
+
 window.openAddSalesModal = function() {
     const modal = document.getElementById("add-sales-modal");
     const dateInput = document.getElementById("sales-date");
+    const cashInput = document.getElementById("sales-cash");
+    const upiInput = document.getElementById("sales-upi");
+
+    populateSalesPersonDropdown();
+
     if (modal) modal.classList.remove("hide");
     if (dateInput) dateInput.value = new Date().toISOString().split("T")[0];
+    if (cashInput) cashInput.value = "";
+    if (upiInput) upiInput.value = "";
     calcDailyTotalPreview();
 };
 
@@ -2038,9 +2066,23 @@ window.calcDailyTotalPreview = function() {
 window.saveSalesEntry = function(event) {
     event.preventDefault();
     const date = document.getElementById("sales-date")?.value;
-    const person = document.getElementById("sales-person")?.value;
+    const selectPerson = document.getElementById("sales-person")?.value;
+    const customPerson = document.getElementById("sales-person-custom")?.value.trim();
     const cash = Number(document.getElementById("sales-cash")?.value) || 0;
     const upi = Number(document.getElementById("sales-upi")?.value) || 0;
+
+    let person = selectPerson;
+    if (selectPerson === "__NEW__") {
+        if (!customPerson) {
+            showToast("Please enter a person name.", true);
+            return;
+        }
+        person = customPerson;
+        if (!savedPersons.includes(person)) {
+            savedPersons.push(person);
+            savePersonsToStorage();
+        }
+    }
 
     if (!date || !person) return;
 
@@ -2064,6 +2106,14 @@ window.deleteSalesEntry = function(id) {
     salesReports = salesReports.filter(e => e.id !== id);
     saveSalesReportsToStorage();
     showToast("Sales entry deleted.");
+    renderSalesReport();
+};
+
+window.clearSalesData = function() {
+    if (!confirm("Clear all logged sales data?")) return;
+    salesReports = [];
+    saveSalesReportsToStorage();
+    showToast("All sales collection data cleared.");
     renderSalesReport();
 };
 
