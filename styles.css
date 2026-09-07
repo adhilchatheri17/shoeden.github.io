@@ -2788,64 +2788,15 @@ td span {
   }
 }
 
-/* ── 3D WAREHOUSE STOCK HERO BANNER & KPI CARDS (Matching Reference Image 1) ── */
+/* ── WAREHOUSE STOCK KPI CARDS ── */
 .warehouse-hero-card {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 20px;
+  display: block;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 24px;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05);
-}
-
-.warehouse-hero-visual {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 200px;
-  border-radius: 18px;
-  overflow: hidden;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-}
-
-.warehouse-hero-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.warehouse-live-badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(8px);
-  color: #ffffff;
-  font-size: 0.72rem;
-  font-weight: 800;
-  padding: 4px 12px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.warehouse-live-badge i {
-  color: #22c55e;
-  font-size: 0.55rem;
-  animation: pulse-green 2s infinite;
-}
-
-@keyframes pulse-green {
-  0% { opacity: 1; }
-  50% { opacity: 0.4; }
-  100% { opacity: 1; }
+  border-radius: 20px;
+  padding: 14px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
 }
 
 .warehouse-kpi-grid {
