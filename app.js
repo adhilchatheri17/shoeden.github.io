@@ -2036,25 +2036,35 @@ window.handleSalesPersonChange = function(selectEl) {
     }
 };
 
-window.openAddSalesModal = function() {
-    const modal = document.getElementById("add-sales-modal");
-    const dateInput = document.getElementById("sales-date");
-    const cashInput = document.getElementById("sales-cash");
-    const upiInput = document.getElementById("sales-upi");
+window.toggleAddSalesForm = function(forceShow) {
+    const card = document.getElementById("inline-sales-form-card");
+    const toggleBtnText = document.getElementById("toggle-sales-form-text");
+    if (!card) return;
 
-    populateSalesPersonDropdown();
+    const isHidden = card.classList.contains("hide");
+    const shouldShow = forceShow !== undefined ? forceShow : isHidden;
 
-    if (modal) modal.classList.remove("hide");
-    if (dateInput) dateInput.value = new Date().toISOString().split("T")[0];
-    if (cashInput) cashInput.value = "";
-    if (upiInput) upiInput.value = "";
-    calcDailyTotalPreview();
+    if (shouldShow) {
+        populateSalesPersonDropdown();
+        const dateInput = document.getElementById("sales-date");
+        const cashInput = document.getElementById("sales-cash");
+        const upiInput = document.getElementById("sales-upi");
+
+        if (dateInput) dateInput.value = new Date().toISOString().split("T")[0];
+        if (cashInput) cashInput.value = "";
+        if (upiInput) upiInput.value = "";
+        calcDailyTotalPreview();
+
+        card.classList.remove("hide");
+        if (toggleBtnText) toggleBtnText.textContent = "Close Form";
+    } else {
+        card.classList.add("hide");
+        if (toggleBtnText) toggleBtnText.textContent = "+ Add Daily Collection";
+    }
 };
 
-window.closeAddSalesModal = function() {
-    const modal = document.getElementById("add-sales-modal");
-    if (modal) modal.classList.add("hide");
-};
+window.openAddSalesModal = window.toggleAddSalesForm;
+window.closeAddSalesModal = function() { window.toggleAddSalesForm(false); };
 
 window.calcDailyTotalPreview = function() {
     const cash = Number(document.getElementById("sales-cash")?.value) || 0;

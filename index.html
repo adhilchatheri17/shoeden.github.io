@@ -14,7 +14,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=9001">
+    <link rel="stylesheet" href="styles.css?v=9500">
 </head>
 
 <body>
@@ -535,11 +535,53 @@
                             <p>Track cash & UPI collections godown-wise and person-wise (Rafeeq, Shuhaib, Shanu, Madurai, Kanyakumari)</p>
                         </div>
                         <div class="sales-banner-actions">
-                            <button class="btn btn-primary btn-compact" onclick="openAddSalesModal()">
+                            <button class="btn btn-primary btn-compact" id="toggle-sales-form-btn" onclick="toggleAddSalesForm()">
                                 <i class="fa-solid fa-circle-plus"></i>
-                                <span>Add Daily Collection</span>
+                                <span id="toggle-sales-form-text">+ Add Daily Collection</span>
                             </button>
                         </div>
+                    </div>
+
+                    <!-- Inline Compact Add Collection Card (Expands in page) -->
+                    <div id="inline-sales-form-card" class="sales-inline-card hide">
+                        <div class="sales-inline-header">
+                            <h4><i class="fa-solid fa-cash-register"></i> Log New Sales Collection</h4>
+                            <button type="button" class="icon-button" onclick="toggleAddSalesForm(false)" title="Close form">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <form id="sales-entry-form" onsubmit="saveSalesEntry(event)">
+                            <div class="sales-inline-grid">
+                                <div class="form-group">
+                                    <label for="sales-date">Date *</label>
+                                    <input type="date" id="sales-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="sales-person">Person / Team *</label>
+                                    <select id="sales-person" onchange="handleSalesPersonChange(this)" required></select>
+                                </div>
+                                <div class="form-group hide" id="custom-person-group">
+                                    <label for="sales-person-custom">New Person Name *</label>
+                                    <input type="text" id="sales-person-custom" placeholder="Type name...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="sales-cash">Cash (₹) *</label>
+                                    <input type="number" id="sales-cash" min="0" placeholder="0" oninput="calcDailyTotalPreview()" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="sales-upi">UPI (₹) *</label>
+                                    <input type="number" id="sales-upi" min="0" placeholder="0" oninput="calcDailyTotalPreview()" required>
+                                </div>
+                                <div class="sales-inline-preview">
+                                    <span>Total:</span>
+                                    <strong id="sales-preview-total">₹0</strong>
+                                </div>
+                                <div class="sales-inline-actions">
+                                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save</button>
+                                    <button type="button" class="btn btn-secondary" onclick="toggleAddSalesForm(false)">Cancel</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
 
                     <!-- Summary KPI Cards -->
@@ -640,55 +682,7 @@
         </main>
     </div>
 
-    <!-- Modal for Logging Daily Sales Entry -->
-    <div id="add-sales-modal" class="modal hide">
-        <div class="modal-content sales-modal-content">
-            <div class="modal-header">
-                <h3><i class="fa-solid fa-cash-register"></i> Log Daily Sales Collection</h3>
-                <button class="modal-close" onclick="closeAddSalesModal()">&times;</button>
-            </div>
-            <form id="sales-entry-form" onsubmit="saveSalesEntry(event)">
-                <div class="form-row-compact">
-                    <div class="form-group">
-                        <label for="sales-date">Collection Date *</label>
-                        <input type="date" id="sales-date" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="sales-person">Person / Godown Team *</label>
-                        <select id="sales-person" onchange="handleSalesPersonChange(this)" required>
-                            <!-- Dynamically populated by app.js -->
-                        </select>
-                    </div>
-                </div>
 
-                <div class="form-group hide" id="custom-person-group">
-                    <label for="sales-person-custom">New Person / Team Name *</label>
-                    <input type="text" id="sales-person-custom" placeholder="Type new person or team name...">
-                </div>
-
-                <div class="form-row-compact">
-                    <div class="form-group">
-                        <label for="sales-cash">Cash Collection (₹) *</label>
-                        <input type="number" id="sales-cash" min="0" placeholder="0" oninput="calcDailyTotalPreview()" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="sales-upi">UPI Collection (₹) *</label>
-                        <input type="number" id="sales-upi" min="0" placeholder="0" oninput="calcDailyTotalPreview()" required>
-                    </div>
-                </div>
-
-                <div class="sales-preview-box">
-                    <span>Calculated Daily Total:</span>
-                    <strong id="sales-preview-total">₹0</strong>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeAddSalesModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Entry</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <div id="toast" class="toast">
         <i class="fa-solid fa-circle-check"></i>
@@ -723,7 +717,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=9001"></script>
+    <script src="app.js?v=9500"></script>
 </body>
 
 </html>
