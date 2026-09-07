@@ -14,7 +14,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=6000">
+    <link rel="stylesheet" href="styles.css?v=7000">
 </head>
 
 <body>
@@ -443,31 +443,91 @@
                 </section>
 
                 <section id="stock" class="view-section hide">
-                    <div class="panel">
+                    <!-- Warehouse Hero Banner & KPI Overview (Matching Reference Image 1) -->
+                    <div class="warehouse-hero-card">
+                        <div class="warehouse-hero-visual">
+                            <img src="assets/warehouse-hero.png" alt="ShoeDen 3D Warehouse Storage Racks" class="warehouse-hero-img">
+                            <div class="warehouse-live-badge">
+                                <i class="fa-solid fa-circle"></i> Live Warehouse Hub
+                            </div>
+                        </div>
+                        <div class="warehouse-kpi-grid">
+                            <div class="warehouse-kpi-card highlight-card">
+                                <div class="kpi-icon-wrap"><i class="fa-solid fa-boxes-stacked"></i></div>
+                                <div class="kpi-content">
+                                    <span class="kpi-label">Occupied Capacity</span>
+                                    <strong id="wh-kpi-capacity-percent" class="kpi-value">0%</strong>
+                                    <div class="capacity-track">
+                                        <div id="wh-kpi-capacity-bar" class="capacity-fill" style="width: 0%"></div>
+                                    </div>
+                                    <small id="wh-kpi-capacity-text" class="kpi-subtext">0 / 0 Total Pairs</small>
+                                </div>
+                            </div>
+
+                            <div class="warehouse-kpi-card">
+                                <div class="kpi-icon-wrap"><i class="fa-solid fa-truck-ramp-box"></i></div>
+                                <div class="kpi-content">
+                                    <span class="kpi-label">Shipped / Hold</span>
+                                    <strong id="wh-kpi-dispatched" class="kpi-value">0</strong>
+                                    <small class="kpi-subtext">Dispatched Pending Delivery</small>
+                                </div>
+                            </div>
+
+                            <div class="warehouse-kpi-card">
+                                <div class="kpi-icon-wrap"><i class="fa-solid fa-warehouse"></i></div>
+                                <div class="kpi-content">
+                                    <span class="kpi-label">Available Balance</span>
+                                    <strong id="wh-kpi-available" class="kpi-value">0</strong>
+                                    <small class="kpi-subtext">Across 5 Godown Zones</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Warehouse Zones Panel -->
+                    <div class="panel stock-main-panel">
                         <div class="panel-heading row">
                             <div>
-                                <h3>Godown Stock</h3>
-                                <span>On hand stock, dispatched pending delivery, and available balance.</span>
+                                <h3>Warehouse Zones & Racks</h3>
+                                <span>Real-time stock management across Chennai, Erode, Kallakurichi, Madurai, & Kanyakumari</span>
                             </div>
-                            <button class="btn btn-secondary btn-compact" onclick="loadAppData()" title="Refresh stock">
-                                <i class="fa-solid fa-rotate"></i>
-                                <span>Refresh</span>
-                            </button>
-                        </div>
-
-                        <div class="stock-legend">
-                            <span><b>Stock</b> editable physical quantity in godown</span>
-                            <span><b>Hold</b> dispatched but not delivered</span>
-                            <span><b>Avail</b> stock minus hold</span>
+                            <div class="stock-header-actions">
+                                <div class="view-toggle-group">
+                                    <button type="button" class="view-toggle-btn active" id="stock-view-zones-btn" onclick="switchStockView('zones')">
+                                        <i class="fa-solid fa-cubes-stacked"></i>
+                                        <span>Zones View</span>
+                                    </button>
+                                    <button type="button" class="view-toggle-btn" id="stock-view-matrix-btn" onclick="switchStockView('matrix')">
+                                        <i class="fa-solid fa-table-cells"></i>
+                                        <span>Full Matrix</span>
+                                    </button>
+                                </div>
+                                <button class="btn btn-secondary btn-compact" onclick="loadAppData()" title="Refresh stock">
+                                    <i class="fa-solid fa-rotate"></i>
+                                    <span>Refresh</span>
+                                </button>
+                            </div>
                         </div>
 
                         <div id="stock-setup-message" class="setup-alert hide"></div>
 
-                        <div class="stock-scroll">
-                            <table class="stock-table">
-                                <thead id="stock-table-head"></thead>
-                                <tbody id="stock-table-body"></tbody>
-                            </table>
+                        <!-- 1. ZONES GRID VIEW (Matching Reference Image 1) -->
+                        <div id="stock-zones-container" class="stock-zones-grid"></div>
+
+                        <!-- 2. FULL MATRIX VIEW -->
+                        <div id="stock-matrix-container" class="stock-matrix-view hide">
+                            <div class="stock-legend">
+                                <span><b>Stock</b> editable physical quantity in godown</span>
+                                <span><b>Hold</b> dispatched but not delivered</span>
+                                <span><b>Avail</b> stock minus hold</span>
+                            </div>
+
+                            <div class="stock-scroll">
+                                <table class="stock-table">
+                                    <thead id="stock-table-head"></thead>
+                                    <tbody id="stock-table-body"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -517,7 +577,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=6000"></script>
+    <script src="app.js?v=7000"></script>
 </body>
 
 </html>

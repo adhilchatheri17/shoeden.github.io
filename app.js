@@ -1186,11 +1186,41 @@ function formatItemsMinimal(items) {
 }
 
 
+window.switchStockView = function(mode) {
+    const zonesContainer = document.getElementById("stock-zones-container");
+    const matrixContainer = document.getElementById("stock-matrix-container");
+    const zonesBtn = document.getElementById("stock-view-zones-btn");
+    const matrixBtn = document.getElementById("stock-view-matrix-btn");
+    
+    if (mode === 'matrix') {
+        zonesContainer?.classList.add("hide");
+        matrixContainer?.classList.remove("hide");
+        zonesBtn?.classList.remove("active");
+        matrixBtn?.classList.add("active");
+    } else {
+        matrixContainer?.classList.add("hide");
+        zonesContainer?.classList.remove("hide");
+        matrixBtn?.classList.remove("active");
+        zonesBtn?.classList.add("active");
+    }
+};
+
+window.updateStockQuantityStep = function(godownId, product, color, delta) {
+    const baseStock = getStockQty(godownId, product, color);
+    const stockData = calculateStockMetrics();
+    const key = stockKeyForGodown(godownId, product, color);
+    const delivQty = stockData.delivered.get(key) || 0;
+    const currentPhysicalStock = baseStock - delivQty;
+    const newPhysical = Math.max(0, currentPhysicalStock + delta);
+    
+    updateStockQuantity(godownId, product, color, newPhysical);
+};
+
 function renderStockTable() {
     const head = document.getElementById("stock-table-head");
     const body = document.getElementById("stock-table-body");
+    const zonesContainer = document.getElementById("stock-zones-container");
     const setupMessage = document.getElementById("stock-setup-message");
-    if (!head || !body) return;
 
     if (setupMessage) {
         if (!stockStorageAvailable && stockStorageMessage) {
@@ -1217,108 +1247,265 @@ function renderStockTable() {
 
     const stockData = calculateStockMetrics();
 
-    head.innerHTML = `
-        <tr>
-            <th>Product</th>
-            ${GODOWNS.map(godown => `<th>${escapeHtml(godown.label)}</th>`).join("")}
-            <th>Total Available</th>
-        </tr>
-    `;
+    // ── Calculate Grand Totals across all Godowns for Hero Stats ──
+    let grandPhysical = 0;
+    let grandHold = 0;
+    let grandAvailable = 0;
 
-    const rackProducts = STOCK_VARIANTS.filter(v => v.category === "Shoe Rack");
-    const tableProducts = STOCK_VARIANTS.filter(v => v.category === "Table");
-
-    function renderProductRow(variant) {
-        let totalAvailable = 0;
-        const godownCells = GODOWNS.map(godown => {
+    GODOWNS.forEach(godown => {
+        STOCK_VARIANTS.forEach(variant => {
             const baseStock = getStockQty(godown.id, variant.product, variant.color);
             const key = stockKeyForGodown(godown.id, variant.product, variant.color);
             const holdQty = stockData.holds.get(key) || 0;
             const delivQty = stockData.delivered.get(key) || 0;
             
-            const currentPhysicalStock = baseStock - delivQty;
-            const available = currentPhysicalStock - holdQty;
-            totalAvailable += available;
-            const availableClass = available < 0 ? "negative" : available <= 3 ? "low" : "";
+            const physical = baseStock - delivQty;
+            const available = physical - holdQty;
 
-            return `
-                <td>
-                    <div class="stock-cell">
-                        <input
-                            type="number"
-                            value="${currentPhysicalStock}"
-                            ${stockStorageAvailable ? "" : "disabled"}
-                            onchange="updateStockQuantity('${jsString(godown.id)}', '${jsString(variant.product)}', '${jsString(variant.color)}', this.value)"
-                            aria-label="${escapeHtml(`${variant.label} ${variant.color || "stock"} ${godown.label}`)}"
-                        >
-                        <div class="stock-metrics">
-                            <span>Hold <b>${holdQty}</b></span>
-                            <span>Deliv <b>${delivQty}</b></span>
-                            <span>Avail <b class="${availableClass}">${available}</b></span>
-                        </div>
-                    </div>
-                </td>
-            `;
-        }).join("");
+            grandPhysical += physical;
+            grandHold += holdQty;
+            grandAvailable += available;
+        });
+    });
 
-        return `
-            <tr>
-                <td class="stock-product">
-                    <strong>${escapeHtml(variant.label)}</strong>
-                    <span>${escapeHtml(variant.category)}</span>
-                </td>
-                ${godownCells}
-                <td><strong class="${totalAvailable < 0 ? "negative" : totalAvailable <= 10 ? "low" : ""}">${totalAvailable}</strong></td>
-            </tr>
-        `;
-    }
+    // ── Update Hero KPI Cards ──
+    const maxCapacityEst = GODOWNS.length * 350; // Estimated 350 pairs max capacity per godown
+    const capacityPercent = Math.min(100, Math.round((grandPhysical / maxCapacityEst) * 100));
 
-    function renderSubtotalRow(label, variants) {
-        let grandTotal = 0;
-        const godownCells = GODOWNS.map(godown => {
-            let subtotal = 0;
-            variants.forEach(variant => {
-                const stockQty = getStockQty(godown.id, variant.product, variant.color);
+    const capacityPercentEl = document.getElementById("wh-kpi-capacity-percent");
+    const capacityBarEl = document.getElementById("wh-kpi-capacity-bar");
+    const capacityTextEl = document.getElementById("wh-kpi-capacity-text");
+    const dispatchedEl = document.getElementById("wh-kpi-dispatched");
+    const availableEl = document.getElementById("wh-kpi-available");
+
+    if (capacityPercentEl) capacityPercentEl.textContent = `${capacityPercent}%`;
+    if (capacityBarEl) capacityBarEl.style.width = `${capacityPercent}%`;
+    if (capacityTextEl) capacityTextEl.textContent = `${grandPhysical.toLocaleString()} / ${maxCapacityEst.toLocaleString()} Total Pairs`;
+    if (dispatchedEl) dispatchedEl.textContent = grandHold.toLocaleString();
+    if (availableEl) availableEl.textContent = grandAvailable.toLocaleString();
+
+    // ── Render 3D Godown Zone Cards (Matching Reference Image 1) ──
+    if (zonesContainer) {
+        const zoneLetters = ["A", "B", "C", "D", "E"];
+        const zoneSubtitles = [
+            "Fast Picking Logistics",
+            "Central Express Hub",
+            "Main Stock Depot",
+            "Regional Distribution",
+            "Southern Dispatch Terminal"
+        ];
+
+        zonesContainer.innerHTML = GODOWNS.map((godown, idx) => {
+            const letter = zoneLetters[idx % zoneLetters.length];
+            const subtitle = zoneSubtitles[idx % zoneSubtitles.length];
+            const godownEstCap = 350;
+            let godownPhysical = 0;
+            let godownHold = 0;
+            let godownAvail = 0;
+
+            const productRows = STOCK_VARIANTS.map(variant => {
+                const baseStock = getStockQty(godown.id, variant.product, variant.color);
                 const key = stockKeyForGodown(godown.id, variant.product, variant.color);
                 const holdQty = stockData.holds.get(key) || 0;
                 const delivQty = stockData.delivered.get(key) || 0;
-                subtotal += stockQty - holdQty - delivQty;
-            });
-            grandTotal += subtotal;
-            const cls = subtotal < 0 ? "negative" : subtotal <= 5 ? "low" : "";
-            return `<td class="stock-subtotal-cell"><strong class="${cls}">${subtotal}</strong></td>`;
-        }).join("");
+                const physical = baseStock - delivQty;
+                const available = physical - holdQty;
 
-        const grandCls = grandTotal < 0 ? "negative" : grandTotal <= 10 ? "low" : "";
-        return `
-            <tr class="stock-subtotal-row">
-                <td class="stock-product stock-subtotal-cell"><strong>${escapeHtml(label)}</strong></td>
-                ${godownCells}
-                <td class="stock-subtotal-cell"><strong class="${grandCls}">${grandTotal}</strong></td>
+                godownPhysical += physical;
+                godownHold += holdQty;
+                godownAvail += available;
+
+                const safeGodownId = jsString(godown.id);
+                const safeProduct = jsString(variant.product);
+                const safeColor = jsString(variant.color);
+
+                const availClass = available < 0 ? "negative-badge" : available <= 3 ? "low-badge" : "ok-badge";
+
+                return `
+                    <div class="zone-product-item">
+                        <div class="zone-prod-info">
+                            <strong>${escapeHtml(variant.label)}</strong>
+                            <span class="zone-prod-cat">${escapeHtml(variant.category)}</span>
+                        </div>
+                        <div class="zone-prod-metrics">
+                            <span class="zone-metric-pill hold">Hold <b>${holdQty}</b></span>
+                            <span class="zone-metric-pill ${availClass}">Avail <b>${available}</b></span>
+                        </div>
+                        <div class="zone-prod-stepper">
+                            <button type="button" class="stepper-btn" onclick="updateStockQuantityStep('${safeGodownId}', '${safeProduct}', '${safeColor}', -1)">-</button>
+                            <input
+                                type="number"
+                                class="zone-stock-input"
+                                value="${physical}"
+                                ${stockStorageAvailable ? "" : "disabled"}
+                                onchange="updateStockQuantity('${safeGodownId}', '${safeProduct}', '${safeColor}', this.value)"
+                            >
+                            <button type="button" class="stepper-btn" onclick="updateStockQuantityStep('${safeGodownId}', '${safeProduct}', '${safeColor}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            const godownCapPercent = Math.min(100, Math.round((godownPhysical / godownEstCap) * 100));
+
+            return `
+                <div class="godown-zone-card">
+                    <div class="zone-card-header">
+                        <div class="zone-badge">
+                            <span>ZONE</span>
+                            <strong>${letter}</strong>
+                        </div>
+                        <div class="zone-title-box">
+                            <h4>${escapeHtml(godown.label)}</h4>
+                            <span class="zone-sub">${subtitle}</span>
+                        </div>
+                        <div class="zone-group-tag">
+                            <i class="fa-solid fa-layer-group"></i> ${escapeHtml(godown.group || "Godown")}
+                        </div>
+                    </div>
+
+                    <div class="zone-capacity-box">
+                        <div class="zone-cap-head">
+                            <span>Capacity Occupied</span>
+                            <strong>${godownCapPercent}% (${godownPhysical} / ${godownEstCap} Pairs)</strong>
+                        </div>
+                        <div class="capacity-track">
+                            <div class="capacity-fill" style="width: ${godownCapPercent}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="zone-summary-pills">
+                        <div class="zone-pill">
+                            <span>Physical Stock</span>
+                            <strong>${godownPhysical}</strong>
+                        </div>
+                        <div class="zone-pill">
+                            <span>Dispatched Hold</span>
+                            <strong>${godownHold}</strong>
+                        </div>
+                        <div class="zone-pill highlight">
+                            <span>Available Balance</span>
+                            <strong>${godownAvail}</strong>
+                        </div>
+                    </div>
+
+                    <div class="zone-inventory-rack">
+                        <div class="rack-title">
+                            <i class="fa-solid fa-dolly"></i> Stock Racks & Products
+                        </div>
+                        <div class="rack-products-list">
+                            ${productRows}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    // ── Render Secondary Full Matrix View ──
+    if (head && body) {
+        head.innerHTML = `
+            <tr>
+                <th>Product</th>
+                ${GODOWNS.map(godown => `<th>${escapeHtml(godown.label)}</th>`).join("")}
+                <th>Total Available</th>
             </tr>
         `;
-    }
 
-    let rows = "";
-    rows += rackProducts.map(renderProductRow).join("");
-    // Only show rack subtotals if we actually have racks
-    if (rackProducts.length > 0) {
-        rows += renderSubtotalRow("All Racks Total", rackProducts);
-    }
+        const rackProducts = STOCK_VARIANTS.filter(v => v.category === "Shoe Rack");
+        const tableProducts = STOCK_VARIANTS.filter(v => v.category === "Table");
 
-    const ironingTableProducts = tableProducts.filter(v => v.product === "Ironing Table");
-    rows += ironingTableProducts.map(renderProductRow).join("");
-    if (ironingTableProducts.length > 0) {
-        rows += renderSubtotalRow("Ironing Table Total", ironingTableProducts);
-    }
+        function renderProductRow(variant) {
+            let totalAvailable = 0;
+            const godownCells = GODOWNS.map(godown => {
+                const baseStock = getStockQty(godown.id, variant.product, variant.color);
+                const key = stockKeyForGodown(godown.id, variant.product, variant.color);
+                const holdQty = stockData.holds.get(key) || 0;
+                const delivQty = stockData.delivered.get(key) || 0;
+                
+                const currentPhysicalStock = baseStock - delivQty;
+                const available = currentPhysicalStock - holdQty;
+                totalAvailable += available;
+                const availableClass = available < 0 ? "negative" : available <= 3 ? "low" : "";
 
-    const studyTableProducts = tableProducts.filter(v => v.product === "Study Table");
-    rows += studyTableProducts.map(renderProductRow).join("");
-    if (studyTableProducts.length > 0) {
-        rows += renderSubtotalRow("Study Table Total", studyTableProducts);
-    }
+                return `
+                    <td>
+                        <div class="stock-cell">
+                            <input
+                                type="number"
+                                value="${currentPhysicalStock}"
+                                ${stockStorageAvailable ? "" : "disabled"}
+                                onchange="updateStockQuantity('${jsString(godown.id)}', '${jsString(variant.product)}', '${jsString(variant.color)}', this.value)"
+                                aria-label="${escapeHtml(`${variant.label} ${variant.color || "stock"} ${godown.label}`)}"
+                            >
+                            <div class="stock-metrics">
+                                <span>Hold <b>${holdQty}</b></span>
+                                <span>Deliv <b>${delivQty}</b></span>
+                                <span>Avail <b class="${availableClass}">${available}</b></span>
+                            </div>
+                        </div>
+                    </td>
+                `;
+            }).join("");
 
-    body.innerHTML = rows;
+            return `
+                <tr>
+                    <td class="stock-product">
+                        <strong>${escapeHtml(variant.label)}</strong>
+                        <span>${escapeHtml(variant.category)}</span>
+                    </td>
+                    ${godownCells}
+                    <td><strong class="${totalAvailable < 0 ? "negative" : totalAvailable <= 10 ? "low" : ""}">${totalAvailable}</strong></td>
+                </tr>
+            `;
+        }
+
+        function renderSubtotalRow(label, variants) {
+            let grandTotal = 0;
+            const godownCells = GODOWNS.map(godown => {
+                let subtotal = 0;
+                variants.forEach(variant => {
+                    const stockQty = getStockQty(godown.id, variant.product, variant.color);
+                    const key = stockKeyForGodown(godown.id, variant.product, variant.color);
+                    const holdQty = stockData.holds.get(key) || 0;
+                    const delivQty = stockData.delivered.get(key) || 0;
+                    subtotal += stockQty - holdQty - delivQty;
+                });
+                grandTotal += subtotal;
+                const cls = subtotal < 0 ? "negative" : subtotal <= 5 ? "low" : "";
+                return `<td class="stock-subtotal-cell"><strong class="${cls}">${subtotal}</strong></td>`;
+            }).join("");
+
+            const grandCls = grandTotal < 0 ? "negative" : grandTotal <= 10 ? "low" : "";
+            return `
+                <tr class="stock-subtotal-row">
+                    <td class="stock-product stock-subtotal-cell"><strong>${escapeHtml(label)}</strong></td>
+                    ${godownCells}
+                    <td class="stock-subtotal-cell"><strong class="${grandCls}">${grandTotal}</strong></td>
+                </tr>
+            `;
+        }
+
+        let rows = "";
+        rows += rackProducts.map(renderProductRow).join("");
+        if (rackProducts.length > 0) {
+            rows += renderSubtotalRow("All Racks Total", rackProducts);
+        }
+
+        const ironingTableProducts = tableProducts.filter(v => v.product === "Ironing Table");
+        rows += ironingTableProducts.map(renderProductRow).join("");
+        if (ironingTableProducts.length > 0) {
+            rows += renderSubtotalRow("Ironing Table Total", ironingTableProducts);
+        }
+
+        const studyTableProducts = tableProducts.filter(v => v.product === "Study Table");
+        rows += studyTableProducts.map(renderProductRow).join("");
+        if (studyTableProducts.length > 0) {
+            rows += renderSubtotalRow("Study Table Total", studyTableProducts);
+        }
+
+        body.innerHTML = rows;
+    }
 }
 
 function calculateStockMetrics() {
