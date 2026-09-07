@@ -129,10 +129,6 @@ const navConfig = {
     "sales-report": {
         title: "Daily Sales & Collection Report",
         subtitle: "Everyday Cash & UPI collection breakdown by person and godown."
-    },
-    "influencer-orders": {
-        title: "Influencer Orders",
-        subtitle: "Track influencer collaborations and video upload statuses."
     }
 };
 
@@ -616,7 +612,28 @@ async function saveNewOrder() {
 
         const savedOrder = fromDbOrder(data);
         orders.unshift(savedOrder);
-        showToast("Order saved.");
+
+        // If marked as Influencer Order, automatically log to Influencers tracker!
+        if (isInfluencer) {
+            const productSummary = items.map(i => {
+                const prod = INVENTORY_CONFIG[i.productKey]?.label || i.productKey;
+                return `${prod} (${i.color || 'Standard'} x${i.qty})`;
+            }).join(", ");
+
+            const autoInfEntry = {
+                id: "inf-auto-" + Date.now(),
+                name: customerName || agentName || "Influencer Order",
+                phone: customerPhone || "--",
+                date: orderDate || new Date().toISOString().slice(0, 10),
+                product: productSummary,
+                videoUploaded: false
+            };
+            influencerOrders.push(autoInfEntry);
+            saveInfluencerOrdersToStorage();
+            renderInfluencerOrders();
+        }
+
+        showToast(isInfluencer ? "Order saved & automatically added to Influencers page!" : "Order saved.");
         
         orderForm.reset();
         setDefaultOrderDate();
@@ -627,7 +644,16 @@ async function saveNewOrder() {
         syncShareSelection();
         renderShareOrdersPage();
         renderStockTable();
+
+        // Navigate to orders list
         document.querySelector('[data-target="orders-list"]').click();
+
+        // If it was an influencer order, automatically switch to Influencers tab inside Orders page!
+        if (isInfluencer) {
+            switchOrdersViewMode("influencers");
+        } else {
+            switchOrdersViewMode("godowns");
+        }
     } catch (error) {
         showToast("Database rejected save. Check Supabase setup/RLS.", true);
     }
@@ -2353,6 +2379,27 @@ create policy "Logged in users can delete stock" on public.godown_stocks for del
 // ── INFLUENCER ORDERS STATE & MANAGERS ──
 let activeInfluencerTab = "pending"; // "pending", "uploaded", "all"
 let influencerOrders = JSON.parse(localStorage.getItem("shoeden_influencer_orders") || "[]");
+
+window.switchOrdersViewMode = function(mode) {
+    const godownsPanel = document.getElementById("godowns-orders-panel");
+    const influencerPanel = document.getElementById("influencer-orders-panel");
+    const btnGodowns = document.getElementById("btn-mode-godown-orders");
+    const btnInfluencers = document.getElementById("btn-mode-influencer-orders");
+
+    if (mode === "influencers") {
+        if (godownsPanel) godownsPanel.classList.add("hide");
+        if (influencerPanel) influencerPanel.classList.remove("hide");
+        if (btnGodowns) btnGodowns.classList.remove("active");
+        if (btnInfluencers) btnInfluencers.classList.add("active");
+        renderInfluencerOrders();
+    } else {
+        if (godownsPanel) godownsPanel.classList.remove("hide");
+        if (influencerPanel) influencerPanel.classList.add("hide");
+        if (btnGodowns) btnGodowns.classList.add("active");
+        if (btnInfluencers) btnInfluencers.classList.remove("active");
+        renderOrdersTable();
+    }
+};
 
 function saveInfluencerOrdersToStorage() {
     localStorage.setItem("shoeden_influencer_orders", JSON.stringify(influencerOrders));

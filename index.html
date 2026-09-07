@@ -14,7 +14,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=9800">
+    <link rel="stylesheet" href="styles.css?v=9900">
 </head>
 
 <body>
@@ -102,10 +102,6 @@
                     <i class="fa-solid fa-chart-line"></i>
                     <span>Sales Report</span>
                 </button>
-                <button class="nav-item" data-target="influencer-orders">
-                    <i class="fa-solid fa-video"></i>
-                    <span>Influencers</span>
-                </button>
             </nav>
 
             <div class="sidebar-note">
@@ -142,10 +138,6 @@
             <button class="mobile-nav-btn" data-target="sales-report">
                 <i class="fa-solid fa-chart-line"></i>
                 <span>Sales</span>
-            </button>
-            <button class="mobile-nav-btn" data-target="influencer-orders">
-                <i class="fa-solid fa-video"></i>
-                <span>Influencers</span>
             </button>
         </nav>
 
@@ -331,7 +323,20 @@
                 </section>
 
                 <section id="orders-list" class="view-section hide">
-                    <div class="panel">
+                    <!-- Orders View Mode Switcher -->
+                    <div class="sales-tab-bar" style="margin-bottom: 16px;">
+                        <div class="sales-person-tabs" id="orders-view-mode-tabs">
+                            <button type="button" class="sales-person-tab active" id="btn-mode-godown-orders" onclick="switchOrdersViewMode('godowns')">
+                                <i class="fa-solid fa-list-check"></i> Godown Orders
+                            </button>
+                            <button type="button" class="sales-person-tab" id="btn-mode-influencer-orders" onclick="switchOrdersViewMode('influencers')">
+                                <i class="fa-solid fa-video"></i> ⭐ Influencer Orders
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Godown Orders Panel -->
+                    <div id="godowns-orders-panel" class="panel">
                         <div class="table-controls">
                             <div class="search-box">
                                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -349,6 +354,132 @@
                             <i class="fa-solid fa-folder-open"></i>
                             <h3>No orders found</h3>
                             <p>Try another search or add a new order.</p>
+                        </div>
+                    </div>
+
+                    <!-- Embedded Influencer Orders Panel -->
+                    <div id="influencer-orders-panel" class="hide">
+                        <!-- Top Action Header -->
+                        <div class="sales-banner-card">
+                            <div class="sales-banner-info">
+                                <h3><i class="fa-solid fa-video"></i> Influencer Collaboration Orders</h3>
+                            </div>
+                            <div class="sales-banner-actions">
+                                <button class="btn btn-primary btn-compact" id="toggle-influencer-form-btn" onclick="toggleAddInfluencerForm()">
+                                    <i class="fa-solid fa-circle-plus"></i>
+                                    <span id="toggle-influencer-form-text">+ New Influencer Order</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Inline Add Influencer Form Card -->
+                        <div id="inline-influencer-form-card" class="sales-inline-card hide">
+                            <div class="sales-inline-header">
+                                <h4><i class="fa-solid fa-user-plus"></i> Log Influencer Order</h4>
+                                <button type="button" class="icon-button" onclick="toggleAddInfluencerForm(false)" title="Close form">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <form id="influencer-entry-form" onsubmit="saveInfluencerOrder(event)">
+                                <div class="sales-inline-grid">
+                                    <div class="form-group">
+                                        <label for="inf-name">Influencer Name *</label>
+                                        <input type="text" id="inf-name" placeholder="e.g. Priya Vlogs" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inf-phone">Phone Number *</label>
+                                        <input type="tel" id="inf-phone" placeholder="e.g. 9876543210" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inf-date">Order Date *</label>
+                                        <input type="date" id="inf-date" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inf-product">Product / Details</label>
+                                        <input type="text" id="inf-product" placeholder="e.g. Ironing Table">
+                                    </div>
+                                    <div class="form-group checkbox-inline-group" style="align-self: center; margin-top: 18px;">
+                                        <label class="custom-checkbox-label" style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:0.82rem; cursor:pointer;">
+                                            <input type="checkbox" id="inf-video-uploaded" style="width:18px; height:18px; cursor:pointer;">
+                                            <span>Video Uploaded?</span>
+                                        </label>
+                                    </div>
+                                    <div class="sales-inline-actions">
+                                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Order</button>
+                                        <button type="button" class="btn btn-secondary" onclick="toggleAddInfluencerForm(false)">Cancel</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Summary KPI Cards -->
+                        <div class="sales-kpi-grid">
+                            <div class="sales-kpi-card grand-total">
+                                <div class="sales-kpi-icon"><i class="fa-solid fa-users"></i></div>
+                                <div class="sales-kpi-info">
+                                    <span>Total Influencers</span>
+                                    <strong id="inf-total-count">0</strong>
+                                    <small>Orders Logged</small>
+                                </div>
+                            </div>
+
+                            <div class="sales-kpi-card cash-card">
+                                <div class="sales-kpi-icon"><i class="fa-solid fa-clock"></i></div>
+                                <div class="sales-kpi-info">
+                                    <span>Pending Video</span>
+                                    <strong id="inf-pending-count" style="color: #d97706;">0</strong>
+                                    <small>Needs Video Upload</small>
+                                </div>
+                            </div>
+
+                            <div class="sales-kpi-card upi-card">
+                                <div class="sales-kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+                                <div class="sales-kpi-info">
+                                    <span>Video Uploaded</span>
+                                    <strong id="inf-uploaded-count" style="color: #059669;">0</strong>
+                                    <small>Video Posted</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabs: Pending Video Area | Video Uploaded Area | All -->
+                        <div class="panel sales-list-panel">
+                            <div class="sales-tab-bar">
+                                <div class="sales-person-tabs" id="influencer-status-tabs">
+                                    <button type="button" class="sales-person-tab active" onclick="switchInfluencerTab('pending')">
+                                        <i class="fa-solid fa-clock"></i> Pending Video Area
+                                    </button>
+                                    <button type="button" class="sales-person-tab" onclick="switchInfluencerTab('uploaded')">
+                                        <i class="fa-solid fa-circle-check"></i> Video Uploaded Area
+                                    </button>
+                                    <button type="button" class="sales-person-tab" onclick="switchInfluencerTab('all')">
+                                        <i class="fa-solid fa-list"></i> All Orders
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="sales-table-toolbar">
+                                <div class="search-box">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <input type="text" id="search-influencer" placeholder="Search by name, phone, or product..." oninput="renderInfluencerOrders()">
+                                </div>
+                            </div>
+
+                            <div class="table-wrapper">
+                                <table class="sales-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Influencer Name</th>
+                                            <th>Phone Number</th>
+                                            <th>Product / Details</th>
+                                            <th>Video Status (Tick Option)</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="influencer-table-body"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -680,132 +811,6 @@
                         </div>
                     </div>
                 </section>
-
-                <!-- Influencer Orders Section -->
-                <section id="influencer-orders" class="view-section hide">
-                    <!-- Top Action Header -->
-                    <div class="sales-banner-card">
-                        <div class="sales-banner-info">
-                            <h3><i class="fa-solid fa-video"></i> Influencer Collaboration Orders</h3>
-                        </div>
-                        <div class="sales-banner-actions">
-                            <button class="btn btn-primary btn-compact" id="toggle-influencer-form-btn" onclick="toggleAddInfluencerForm()">
-                                <i class="fa-solid fa-circle-plus"></i>
-                                <span id="toggle-influencer-form-text">+ New Influencer Order</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Inline Add Influencer Form Card -->
-                    <div id="inline-influencer-form-card" class="sales-inline-card hide">
-                        <div class="sales-inline-header">
-                            <h4><i class="fa-solid fa-user-plus"></i> Log Influencer Order</h4>
-                            <button type="button" class="icon-button" onclick="toggleAddInfluencerForm(false)" title="Close form">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
-                        <form id="influencer-entry-form" onsubmit="saveInfluencerOrder(event)">
-                            <div class="sales-inline-grid">
-                                <div class="form-group">
-                                    <label for="inf-name">Influencer Name *</label>
-                                    <input type="text" id="inf-name" placeholder="e.g. Priya Vlogs" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="inf-phone">Phone Number *</label>
-                                    <input type="tel" id="inf-phone" placeholder="e.g. 9876543210" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="inf-date">Order Date *</label>
-                                    <input type="date" id="inf-date" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="inf-product">Product / Details</label>
-                                    <input type="text" id="inf-product" placeholder="e.g. Ironing Table">
-                                </div>
-                                <div class="form-group checkbox-inline-group" style="align-self: center; margin-top: 18px;">
-                                    <label class="custom-checkbox-label" style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:0.82rem; cursor:pointer;">
-                                        <input type="checkbox" id="inf-video-uploaded" style="width:18px; height:18px; cursor:pointer;">
-                                        <span>Video Uploaded?</span>
-                                    </label>
-                                </div>
-                                <div class="sales-inline-actions">
-                                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save Order</button>
-                                    <button type="button" class="btn btn-secondary" onclick="toggleAddInfluencerForm(false)">Cancel</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Summary KPI Cards -->
-                    <div class="sales-kpi-grid">
-                        <div class="sales-kpi-card grand-total">
-                            <div class="sales-kpi-icon"><i class="fa-solid fa-users"></i></div>
-                            <div class="sales-kpi-info">
-                                <span>Total Influencers</span>
-                                <strong id="inf-total-count">0</strong>
-                                <small>Orders Logged</small>
-                            </div>
-                        </div>
-
-                        <div class="sales-kpi-card cash-card">
-                            <div class="sales-kpi-icon"><i class="fa-solid fa-clock"></i></div>
-                            <div class="sales-kpi-info">
-                                <span>Pending Video</span>
-                                <strong id="inf-pending-count" style="color: #d97706;">0</strong>
-                                <small>Needs Video Upload</small>
-                            </div>
-                        </div>
-
-                        <div class="sales-kpi-card upi-card">
-                            <div class="sales-kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
-                            <div class="sales-kpi-info">
-                                <span>Video Uploaded</span>
-                                <strong id="inf-uploaded-count" style="color: #059669;">0</strong>
-                                <small>Video Posted</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tabs: Pending Video Area | Video Uploaded Area | All -->
-                    <div class="panel sales-list-panel">
-                        <div class="sales-tab-bar">
-                            <div class="sales-person-tabs" id="influencer-status-tabs">
-                                <button type="button" class="sales-person-tab active" onclick="switchInfluencerTab('pending')">
-                                    <i class="fa-solid fa-clock"></i> Pending Video Area
-                                </button>
-                                <button type="button" class="sales-person-tab" onclick="switchInfluencerTab('uploaded')">
-                                    <i class="fa-solid fa-circle-check"></i> Video Uploaded Area
-                                </button>
-                                <button type="button" class="sales-person-tab" onclick="switchInfluencerTab('all')">
-                                    <i class="fa-solid fa-list"></i> All Orders
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="sales-table-toolbar">
-                            <div class="search-box">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                                <input type="text" id="search-influencer" placeholder="Search by name, phone, or product..." oninput="renderInfluencerOrders()">
-                            </div>
-                        </div>
-
-                        <div class="table-wrapper">
-                            <table class="sales-table">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Influencer Name</th>
-                                        <th>Phone Number</th>
-                                        <th>Product / Details</th>
-                                        <th>Video Status (Tick Option)</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="influencer-table-body"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
             </div>
         </main>
     </div>
@@ -845,7 +850,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js?v=9800"></script>
+    <script src="app.js?v=9900"></script>
 </body>
 
 </html>
