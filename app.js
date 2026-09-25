@@ -383,9 +383,62 @@ async function loadStocks() {
     }
 }
 
+async function loadSalesReports() {
+    try {
+        if (SUPABASE_IS_CONFIGURED && supabaseClient) {
+            const { data, error } = await supabaseClient
+                .from("sales_reports")
+                .select("*")
+                .order("date", { ascending: false });
+            if (!error && data && data.length > 0) {
+                salesReports = data.map(d => ({
+                    id: d.id,
+                    date: d.date,
+                    person: d.person,
+                    cash: Number(d.cash) || 0,
+                    upi: Number(d.upi) || 0
+                }));
+                saveSalesReportsToStorage();
+            }
+        }
+    } catch (error) {
+        console.warn("Could not load sales reports from Supabase:", error);
+    } finally {
+        renderSalesReport();
+    }
+}
+
+async function loadInfluencerOrders() {
+    try {
+        if (SUPABASE_IS_CONFIGURED && supabaseClient) {
+            const { data, error } = await supabaseClient
+                .from("influencer_orders")
+                .select("*")
+                .order("date", { ascending: false });
+            if (!error && data && data.length > 0) {
+                influencerOrders = data.map(d => ({
+                    id: d.id,
+                    name: d.name,
+                    phone: d.phone,
+                    date: d.date,
+                    product: d.product,
+                    videoUploaded: Boolean(d.video_uploaded)
+                }));
+                saveInfluencerOrdersToStorage();
+            }
+        }
+    } catch (error) {
+        console.warn("Could not load influencer orders from Supabase:", error);
+    } finally {
+        renderInfluencerOrders();
+    }
+}
+
 async function loadAppData() {
     await loadOrders();
     await loadStocks();
+    await loadSalesReports();
+    await loadInfluencerOrders();
 }
 
 function setupNavigation() {
@@ -2156,6 +2209,19 @@ window.saveSalesEntry = function(event) {
 
     salesReports.push(newEntry);
     saveSalesReportsToStorage();
+
+    if (SUPABASE_IS_CONFIGURED && supabaseClient) {
+        supabaseClient.from("sales_reports").insert({
+            id: newEntry.id,
+            date: newEntry.date,
+            person: newEntry.person,
+            cash: newEntry.cash,
+            upi: newEntry.upi
+        }).then(({ error }) => {
+            if (error) console.warn("Supabase sales entry save notice:", error.message);
+        });
+    }
+
     closeAddSalesModal();
     showToast(`Sales collection logged for ${person}.`);
     renderSalesReport();
@@ -2165,6 +2231,13 @@ window.deleteSalesEntry = function(id) {
     if (!confirm("Delete this sales entry?")) return;
     salesReports = salesReports.filter(e => e.id !== id);
     saveSalesReportsToStorage();
+
+    if (SUPABASE_IS_CONFIGURED && supabaseClient) {
+        supabaseClient.from("sales_reports").delete().eq("id", id).then(({ error }) => {
+            if (error) console.warn("Supabase sales entry delete notice:", error.message);
+        });
+    }
+
     showToast("Sales entry deleted.");
     renderSalesReport();
 };
@@ -2562,6 +2635,20 @@ window.saveInfluencerOrder = function(event) {
 
     influencerOrders.push(newEntry);
     saveInfluencerOrdersToStorage();
+
+    if (SUPABASE_IS_CONFIGURED && supabaseClient) {
+        supabaseClient.from("influencer_orders").insert({
+            id: newEntry.id,
+            name: newEntry.name,
+            phone: newEntry.phone,
+            date: newEntry.date,
+            product: newEntry.product,
+            video_uploaded: newEntry.videoUploaded
+        }).then(({ error }) => {
+            if (error) console.warn("Supabase influencer order save notice:", error.message);
+        });
+    }
+
     toggleAddInfluencerForm(false);
     showToast(`Influencer order logged for ${name}.`);
     renderInfluencerOrders();
@@ -2572,6 +2659,15 @@ window.toggleInfluencerVideoStatus = function(id, isUploaded) {
     if (entry) {
         entry.videoUploaded = isUploaded;
         saveInfluencerOrdersToStorage();
+
+        if (SUPABASE_IS_CONFIGURED && supabaseClient) {
+            supabaseClient.from("influencer_orders").update({
+                video_uploaded: isUploaded
+            }).eq("id", id).then(({ error }) => {
+                if (error) console.warn("Supabase influencer video update notice:", error.message);
+            });
+        }
+
         showToast(isUploaded ? `Video marked as Uploaded for ${entry.name}!` : `Moved ${entry.name} back to Pending Video Area.`);
         renderInfluencerOrders();
     }
@@ -2581,6 +2677,13 @@ window.deleteInfluencerOrder = function(id) {
     if (!confirm("Delete this influencer order record?")) return;
     influencerOrders = influencerOrders.filter(o => o.id !== id);
     saveInfluencerOrdersToStorage();
+
+    if (SUPABASE_IS_CONFIGURED && supabaseClient) {
+        supabaseClient.from("influencer_orders").delete().eq("id", id).then(({ error }) => {
+            if (error) console.warn("Supabase influencer order delete notice:", error.message);
+        });
+    }
+
     showToast("Influencer order record deleted.");
     renderInfluencerOrders();
 };

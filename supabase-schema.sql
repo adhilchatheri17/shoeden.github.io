@@ -119,3 +119,54 @@ create trigger set_godown_stocks_updated_at
 before update on public.godown_stocks
 for each row
 execute function public.set_updated_at();
+
+-- Sales Reports Table
+create table if not exists public.sales_reports (
+  id text primary key,
+  date date not null,
+  person text not null,
+  cash numeric not null default 0,
+  upi numeric not null default 0,
+  created_by uuid default auth.uid(),
+  created_at timestamptz not null default now()
+);
+
+alter table public.sales_reports enable row level security;
+
+drop policy if exists "Logged in users can read sales_reports" on public.sales_reports;
+create policy "Logged in users can read sales_reports" on public.sales_reports for select to authenticated using (true);
+
+drop policy if exists "Logged in users can create sales_reports" on public.sales_reports;
+create policy "Logged in users can create sales_reports" on public.sales_reports for insert to authenticated with check (true);
+
+drop policy if exists "Logged in users can update sales_reports" on public.sales_reports;
+create policy "Logged in users can update sales_reports" on public.sales_reports for update to authenticated using (true) with check (true);
+
+drop policy if exists "Logged in users can delete sales_reports" on public.sales_reports;
+create policy "Logged in users can delete sales_reports" on public.sales_reports for delete to authenticated using (true);
+
+-- Influencer Orders Table
+create table if not exists public.influencer_orders (
+  id text primary key,
+  name text not null,
+  phone text not null,
+  date date not null,
+  product text,
+  video_uploaded boolean not null default false,
+  created_by uuid default auth.uid(),
+  created_at timestamptz not null default now()
+);
+
+alter table public.influencer_orders enable row level security;
+
+drop policy if exists "Logged in users can read influencer_orders" on public.influencer_orders;
+create policy "Logged in users can read influencer_orders" on public.influencer_orders for select to authenticated using (true);
+
+drop policy if exists "Logged in users can create influencer_orders" on public.influencer_orders;
+create policy "Logged in users can create influencer_orders" on public.influencer_orders for insert to authenticated with check (true);
+
+drop policy if exists "Logged in users can update influencer_orders" on public.influencer_orders;
+create policy "Logged in users can update influencer_orders" on public.influencer_orders for update to authenticated using (true) with check (true);
+
+drop policy if exists "Logged in users can delete influencer_orders" on public.influencer_orders;
+create policy "Logged in users can delete influencer_orders" on public.influencer_orders for delete to authenticated using (true);
