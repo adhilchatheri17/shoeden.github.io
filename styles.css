@@ -4076,35 +4076,35 @@ td span {
   }
 
   .warehouse-hero-card {
-    padding: 10px 12px;
-    margin-bottom: 12px;
-    border-radius: 14px;
+    padding: 6px 8px;
+    margin-bottom: 8px;
+    border-radius: 10px;
     width: 100%;
     box-sizing: border-box;
   }
 
   .warehouse-kpi-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    gap: 4px;
   }
 
   .warehouse-kpi-card {
-    padding: 8px 10px;
-    border-radius: 12px;
-    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    gap: 4px;
     min-width: 0;
   }
 
   .warehouse-kpi-card .kpi-icon-wrap {
-    width: 30px;
-    height: 30px;
-    font-size: 0.85rem;
-    border-radius: 8px;
+    width: 24px;
+    height: 24px;
+    font-size: 0.72rem;
+    border-radius: 6px;
     flex-shrink: 0;
   }
 
   .warehouse-kpi-card .kpi-label {
-    font-size: 0.58rem;
+    font-size: 0.52rem;
     letter-spacing: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -4112,19 +4112,19 @@ td span {
   }
 
   .warehouse-kpi-card .kpi-value {
-    font-size: 1.05rem;
+    font-size: 0.92rem;
   }
 
   .warehouse-kpi-card .kpi-subtext {
-    font-size: 0.6rem;
+    font-size: 0.54rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .stock-main-panel {
-    padding: 12px;
-    border-radius: 14px;
+    padding: 8px 10px;
+    border-radius: 12px;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -4133,14 +4133,23 @@ td span {
   .stock-main-panel .panel-heading.row {
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: 8px;
+  }
+
+  .stock-main-panel .panel-heading.row h3 {
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+  }
+
+  .stock-main-panel .panel-heading.row span {
+    font-size: 0.62rem;
   }
 
   .stock-header-actions {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
+    gap: 4px;
     width: 100%;
   }
 
@@ -4155,15 +4164,16 @@ td span {
   .view-toggle-btn {
     flex: 1;
     justify-content: center;
-    padding: 5px 6px;
-    font-size: 0.68rem;
+    padding: 4px 6px;
+    font-size: 0.64rem;
+    font-weight: 700;
     white-space: nowrap;
   }
 
   .stock-zones-grid {
     grid-template-columns: 1fr !important;
-    gap: 12px;
-    margin-top: 12px;
+    gap: 8px;
+    margin-top: 8px;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -4174,10 +4184,10 @@ td span {
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box;
-    padding: 12px;
-    border-radius: 14px;
-    gap: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    padding: 8px 10px;
+    border-radius: 12px;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   }
 
   .zone-card-header {
@@ -4187,35 +4197,39 @@ td span {
   }
 
   .zone-badge {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
   }
 
   .zone-badge span {
-    font-size: 0.5rem;
+    font-size: 0.45rem;
   }
 
   .zone-badge strong {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
 
   .zone-title-box h4 {
-    font-size: 0.9rem;
+    font-size: 0.84rem;
   }
 
   .zone-group-tag {
-    font-size: 0.62rem;
-    padding: 2px 6px;
+    font-size: 0.58rem;
+    padding: 2px 5px;
   }
 
   .zone-capacity-box {
-    padding: 8px 10px;
-    border-radius: 10px;
+    padding: 5px 8px;
+    border-radius: 8px;
   }
 
   .zone-cap-head {
-    font-size: 0.7rem;
+    font-size: 0.64rem;
+  }
+
+  .capacity-track {
+    height: 5px;
   }
 
   .zone-summary-pills {
@@ -4227,15 +4241,15 @@ td span {
   }
 
   .zone-pill {
-    padding: 5px 2px;
-    border-radius: 8px;
+    padding: 3px 2px;
+    border-radius: 6px;
     min-width: 0;
     width: 100%;
     box-sizing: border-box;
   }
 
   .zone-pill span {
-    font-size: 0.54rem;
+    font-size: 0.5rem;
     letter-spacing: -0.01em;
     white-space: nowrap;
     overflow: hidden;
@@ -4243,18 +4257,18 @@ td span {
   }
 
   .zone-pill strong {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
   }
 
   .zone-product-item {
     width: 100%;
     box-sizing: border-box;
-    padding: 8px 10px;
+    padding: 6px 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 6px;
-    border-radius: 10px;
+    gap: 4px;
+    border-radius: 8px;
   }
 
   .zone-prod-info {
@@ -4263,40 +4277,45 @@ td span {
   }
 
   .zone-prod-info strong {
-    font-size: 0.8rem;
+    font-size: 0.76rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
   }
 
+  .zone-prod-cat {
+    font-size: 0.58rem;
+  }
+
   .zone-prod-metrics {
     display: flex;
-    gap: 4px;
+    gap: 3px;
     flex-shrink: 0;
   }
 
   .zone-metric-pill {
-    font-size: 0.62rem;
-    padding: 2px 5px;
+    font-size: 0.58rem;
+    padding: 1px 4px;
     white-space: nowrap;
   }
 
   .zone-prod-stepper {
     flex-shrink: 0;
     gap: 2px;
-    padding: 2px 4px;
+    padding: 1px 3px;
   }
 
   .stepper-btn {
-    width: 26px;
-    height: 26px;
-    font-size: 0.9rem;
+    width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
   }
 
   .zone-stock-input {
-    width: 32px;
-    font-size: 0.85rem;
+    width: 28px;
+    font-size: 0.8rem;
+    padding: 1px 2px;
   }
 
   .stock-scroll {
@@ -4304,41 +4323,64 @@ td span {
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid #e2e8f0;
   }
 
   .stock-table {
-    min-width: 600px;
-    font-size: 0.76rem;
+    min-width: 550px;
+    font-size: 0.72rem;
   }
 
   .stock-table th,
   .stock-table td {
-    padding: 8px 10px;
+    padding: 6px 8px;
   }
 
   .stock-table input[type="number"] {
-    min-width: 44px;
-    padding: 4px 6px;
-    font-size: 0.82rem;
+    min-width: 38px;
+    padding: 3px 4px;
+    font-size: 0.78rem;
   }
 
   /* Mobile Stock Map Preview Responsive Rules */
-  .stock-map-panel {
-    padding: 14px;
-    border-radius: 16px;
-    margin-bottom: 14px;
+  .stock-map-panel,
+  .stock-map-view {
+    padding: 10px;
+    border-radius: 12px;
+    margin-top: 8px;
+    margin-bottom: 8px;
   }
 
   .stock-map-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .map-title-wrap i {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  .map-title-wrap h3 {
+    font-size: 0.9rem;
+  }
+
+  .map-title-wrap span {
+    font-size: 0.65rem;
   }
 
   .map-hub-pills {
     width: 100%;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
     scrollbar-width: none;
   }
 
@@ -4346,8 +4388,13 @@ td span {
     display: none;
   }
 
+  .hub-pill {
+    padding: 4px 8px;
+    font-size: 0.68rem;
+  }
+
   .stock-map-frame-wrapper {
-    height: 220px;
-    border-radius: 12px;
+    height: 250px;
+    border-radius: 10px;
   }
 }

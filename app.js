@@ -2701,7 +2701,7 @@ window.focusMapGodown = function(godownKey) {
     };
 
     if (mapIframe && locations[godownKey]) {
-        const zoom = godownKey === "all" ? 7 : 11;
+        const zoom = godownKey === "all" ? 6 : 9;
         mapIframe.src = `https://maps.google.com/maps?q=${locations[godownKey]}&t=m&z=${zoom}&output=embed`;
     }
 
@@ -2709,15 +2709,4 @@ window.focusMapGodown = function(godownKey) {
         const isMatch = pill.getAttribute("onclick")?.includes(`'${godownKey}'`);
         pill.classList.toggle("active", !!isMatch);
     });
-
-    if (godownKey !== "all") {
-        const zoneCards = document.querySelectorAll(".godown-zone-card");
-        zoneCards.forEach(card => {
-            if (card.textContent.toLowerCase().includes(godownKey)) {
-                card.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                card.style.borderColor = "#2563eb";
-                setTimeout(() => { card.style.borderColor = ""; }, 2000);
-            }
-        });
-    }
 };
