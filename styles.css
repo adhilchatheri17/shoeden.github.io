@@ -2962,12 +2962,14 @@ td span {
 }
 
 /* ── GODOWN NETWORK MAP PREVIEW PANEL ── */
-.stock-map-panel {
+.stock-map-panel,
+.stock-map-view {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
   padding: 20px;
-  margin-bottom: 20px;
+  margin-top: 16px;
+  margin-bottom: 10px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.04);
 }
 

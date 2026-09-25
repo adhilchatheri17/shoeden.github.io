@@ -1292,18 +1292,28 @@ function formatItemsMinimal(items) {
 window.switchStockView = function(mode) {
     const zonesContainer = document.getElementById("stock-zones-container");
     const matrixContainer = document.getElementById("stock-matrix-container");
+    const mapPanel = document.getElementById("stock-map-panel");
     const zonesBtn = document.getElementById("stock-view-zones-btn");
     const matrixBtn = document.getElementById("stock-view-matrix-btn");
+    const mapBtn = document.getElementById("stock-view-map-btn");
     
+    // Hide all view sub-sections
+    zonesContainer?.classList.add("hide");
+    matrixContainer?.classList.add("hide");
+    mapPanel?.classList.add("hide");
+    
+    zonesBtn?.classList.remove("active");
+    matrixBtn?.classList.remove("active");
+    mapBtn?.classList.remove("active");
+
     if (mode === 'matrix') {
-        zonesContainer?.classList.add("hide");
         matrixContainer?.classList.remove("hide");
-        zonesBtn?.classList.remove("active");
         matrixBtn?.classList.add("active");
+    } else if (mode === 'map') {
+        mapPanel?.classList.remove("hide");
+        mapBtn?.classList.add("active");
     } else {
-        matrixContainer?.classList.add("hide");
         zonesContainer?.classList.remove("hide");
-        matrixBtn?.classList.remove("active");
         zonesBtn?.classList.add("active");
     }
 };
