@@ -4067,23 +4067,89 @@ td span {
     min-height: 44px;
   }
 
-  /* ── Mobile Header Clearance & Hamburger Menu Alignment ── */
-  .content-wrapper {
-    min-width: 0;
-    padding: 14px 14px 110px 14px;
-    padding-top: 68px !important;
+  /* ── Mobile Top Bar & Header Integration (No Floating Overlap) ── */
+  .top-bar {
+    position: relative !important;
+    top: 0 !important;
+    z-index: 50 !important;
+    padding: 10px 12px 10px 58px !important;
+    min-height: 58px !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
   }
 
   .mobile-menu-toggle {
-    top: 12px;
-    left: 12px;
-    z-index: 990;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: #ffffff;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    border: 1px solid #cbd5e1;
+    position: absolute !important;
+    top: 9px !important;
+    left: 10px !important;
+    z-index: 100 !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    display: grid !important;
+    place-items: center !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .top-bar-logo-pod {
+    display: none !important;
+  }
+
+  .page-title .eyebrow {
+    display: none !important;
+  }
+
+  .page-title h1 {
+    font-size: 1.1rem !important;
+    font-weight: 900 !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .page-title p {
+    font-size: 0.68rem !important;
+    color: #64748b !important;
+    margin: 0 !important;
+    display: block !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 170px !important;
+  }
+
+  .top-bar .actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .top-bar .actions .btn {
+    padding: 6px 10px !important;
+    min-height: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+    font-size: 0.85rem !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+  }
+
+  .top-bar .actions .btn span {
+    display: none !important;
+  }
+
+  .content-wrapper {
+    min-width: 0;
+    padding: 12px 12px 110px 12px !important;
+    padding-top: 12px !important;
   }
 
   /* ── Mobile Responsive Stock Screen Optimizations ── */
