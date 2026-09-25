@@ -2353,6 +2353,11 @@ td span {
     font-size: 1rem;
   }
 
+  .mobile-nav-btn.active,
+  .mobile-nav-btn.active:hover {
+    color: #ffffff;
+  }
+
   .top-bar {
     padding: 12px 12px 12px 58px;
   }
@@ -3641,5 +3646,215 @@ td span {
   .sales-banner-card {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/* ── Phone Workflow Polish ── */
+@media (max-width: 768px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .content-wrapper {
+    min-width: 0;
+    padding: 12px;
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-bottom-nav {
+    gap: 4px;
+    padding: 6px 10px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .mobile-nav-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 7px 3px;
+    font-size: 0.66rem;
+  }
+
+  .mobile-nav-btn i {
+    font-size: 1rem;
+  }
+
+  .panel,
+  .godown-board,
+  .warehouse-hero-card,
+  .sales-list-panel,
+  .chart-panel {
+    border-radius: 12px;
+  }
+
+  .panel {
+    padding: 14px;
+  }
+
+  .form-row-compact {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .checkbox-group {
+    padding: 6px 0 0;
+  }
+
+  .godown-tabs,
+  .sales-person-tabs {
+    margin-right: -2px;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+
+  .godown-tabs::-webkit-scrollbar,
+  .sales-person-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .godown-tab,
+  .sales-person-tab {
+    flex: 0 0 auto;
+  }
+
+  .orders-board {
+    gap: 14px;
+  }
+
+  .godown-board {
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: none;
+  }
+
+  .godown-board-head {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+
+  .order-columns {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    overflow: visible;
+    padding-bottom: 0;
+    scroll-snap-type: none;
+  }
+
+  .order-column {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    scroll-snap-align: none;
+  }
+
+  .order-card-v2,
+  .order-card-v2.is-influencer {
+    background: #ffffff !important;
+    border: 1px solid #dbe3ed !important;
+    border-left-width: 4px !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  }
+
+  .order-card-v2:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  }
+
+  .location-badge {
+    background: #0f172a !important;
+    border-color: #0f172a !important;
+    color: #ffffff !important;
+  }
+
+  .card-delete-btn {
+    background: #f8fafc !important;
+    border-color: #dbe3ed !important;
+    color: #475569 !important;
+  }
+
+  .agent-name,
+  .customer-phone,
+  .customer-phone i,
+  .meta-item,
+  .meta-item i,
+  .area-tag,
+  .area-tag i {
+    color: #0f172a !important;
+  }
+
+  .meta-item {
+    background: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  .card-products {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+  }
+
+  .product-line {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .product-qty,
+  .product-name {
+    color: #0f172a !important;
+  }
+
+  .product-name {
+    min-width: 0;
+  }
+
+  .card-notes {
+    color: #334155 !important;
+    background: #f8fafc !important;
+    border-left-color: #64748b !important;
+  }
+
+  .card-notes i,
+  .card-notes p {
+    color: #334155 !important;
+  }
+
+  .status-select-v2 {
+    background: #0f172a !important;
+    border-color: #0f172a !important;
+    color: #ffffff !important;
+    box-shadow: none;
+  }
+
+  .share-order-card {
+    grid-template-columns: 22px minmax(0, 1fr);
+  }
+
+  .share-single-btn {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .table-wrapper,
+  .stock-scroll {
+    max-width: 100%;
+  }
+
+  .sales-banner-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .sales-inline-actions {
+    width: 100%;
+    height: auto;
+  }
+
+  .sales-inline-actions button {
+    flex: 1;
+  }
+
+  .mobile-nav-btn.active,
+  .mobile-nav-btn.active:hover {
+    color: #ffffff;
   }
 }
