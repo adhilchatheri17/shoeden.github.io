@@ -14,8 +14,10 @@ The login screen keeps the simple local username `admin`; the app maps it to `ad
 
 The app stores:
 
-- `orders`: agent/customer orders and delivery status.
+- `orders`: agent/customer orders and delivery status, including the order group and the godown supplying stock.
 - `godown_stocks`: editable stock quantity per godown, product, and color.
+
+Choose an `Order Group` and a `Stock From Godown` when creating an order. The order board stays grouped by its WhatsApp order group, while stock holds and delivered-stock reductions are applied to the selected stock godown. Existing orders use their original godown as the stock source.
 
 The Stock screen calculates dispatched-but-not-delivered hold quantity from orders with status `Dispatched`.
 

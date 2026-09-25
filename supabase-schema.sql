@@ -6,6 +6,7 @@ create table if not exists public.orders (
   customer_phone text,
   delivery_area text,
   godown_location text not null,
+  stock_godown_location text,
   whatsapp_group text,
   status text not null default 'New'
     check (status in ('New', 'Packed', 'Dispatched', 'Delivered')),
@@ -14,6 +15,13 @@ create table if not exists public.orders (
   created_by uuid default auth.uid(),
   created_at timestamptz not null default now()
 );
+
+alter table public.orders
+add column if not exists stock_godown_location text;
+
+update public.orders
+set stock_godown_location = godown_location
+where stock_godown_location is null;
 
 alter table public.orders
 drop constraint if exists orders_status_check;

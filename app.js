@@ -246,6 +246,7 @@ async function requireSession() {
 
 function setupControls() {
     const godownSelect = document.getElementById("godownLocation");
+    const stockGodownSelect = document.getElementById("stockGodownLocation");
     
     // Status filter is no longer needed since we have visual columns
     // We can remove it or keep it hidden if the column layout handles it all
@@ -258,6 +259,14 @@ function setupControls() {
             "beforeend",
             `<option value="${godown.id}">${godown.label} - ${godown.group}</option>`
         );
+        stockGodownSelect?.insertAdjacentHTML(
+            "beforeend",
+            `<option value="${godown.id}">${godown.label}</option>`
+        );
+    });
+
+    godownSelect.addEventListener("change", () => {
+        if (stockGodownSelect) stockGodownSelect.value = godownSelect.value;
     });
 
     renderGodownTabs();
@@ -567,6 +576,7 @@ function populateProductSelect(select) {
 
 async function saveNewOrder() {
     const godownLocation = document.getElementById("godownLocation").value;
+    const stockGodownLocation = document.getElementById("stockGodownLocation").value;
     const godown = GODOWNS.find(entry => entry.id === godownLocation);
     const agentName = document.getElementById("agentName").value.trim();
     const customerName = document.getElementById("customerName").value.trim();
@@ -579,8 +589,8 @@ async function saveNewOrder() {
     const isInfluencer = document.getElementById("isInfluencer").checked;
     const items = collectItems();
 
-    if (!godownLocation || !agentName || !items.length || !orderDate) {
-        showToast("Fill godown, agent, date, product, color, and quantity.", true);
+    if (!godownLocation || !stockGodownLocation || !agentName || !items.length || !orderDate) {
+        showToast("Fill order group, stock godown, agent, date, product, color, and quantity.", true);
         return;
     }
 
@@ -593,6 +603,7 @@ async function saveNewOrder() {
         deliveryArea,
         locationLink,
         godownLocation,
+        stockGodownLocation,
         whatsappGroup: godown.group,
         status: "New",
         notes,
@@ -792,6 +803,7 @@ function renderOrdersTable() {
             order.deliveryArea,
             order.locationLink,
             order.godownLocation,
+            order.stockGodownLocation,
             order.whatsappGroup
         ].join(" ").toLowerCase();
         return searchText.includes(search) &&
@@ -951,7 +963,7 @@ function renderShareOrdersPage() {
                 <input type="checkbox" class="share-order-check" value="${escapeHtml(order.id)}" ${checked}>
                 <span class="share-order-body">
                     <strong>${escapeHtml(order.agentName || "Agent")} <small>${escapeHtml(order.id)}</small></strong>
-                    <span>${escapeHtml([order.godownLocation, order.status || "New", formatDate(order.date)].filter(Boolean).join(" / "))}</span>
+                    <span>${escapeHtml([`Group: ${order.godownLocation}`, `Stock: ${order.stockGodownLocation || order.godownLocation}`, order.status || "New", formatDate(order.date)].join(" / "))}</span>
                     <span>${escapeHtml([order.customerName, order.customerPhone, order.deliveryArea].filter(Boolean).join(" / ") || "Customer details not added")}</span>
                     ${order.locationLink ? '<span class="location-ready">Location link added</span>' : '<span class="location-missing">No map location</span>'}
                     <b>${totalQty} qty</b>
@@ -1059,7 +1071,8 @@ function buildSingleOrderMessage(order) {
         lines.push(`🌟 *INFLUENCER ORDER*`);
     }
 
-    lines.push(`🏢 *Godown:* ${order.godownLocation || "N/A"}`);
+    lines.push(`🏢 *Order Group:* ${order.godownLocation || "N/A"}`);
+    lines.push(`📦 *Stock From:* ${order.stockGodownLocation || order.godownLocation || "N/A"}`);
     lines.push(`📌 *Agent:* ${order.agentName || "N/A"}`);
 
     if (order.customerName) lines.push(`👤 *Customer:* ${order.customerName}`);
@@ -1157,6 +1170,10 @@ function renderOrderCard(order) {
                 </div>
                 
                 <div class="order-meta">
+                    <div class="meta-item">
+                        <i class="fa-solid fa-warehouse"></i>
+                        <span>Stock: ${escapeHtml(order.stockGodownLocation || order.godownLocation)}</span>
+                    </div>
                     <div class="meta-item">
                         <i class="fa-solid fa-calendar-day"></i>
                         <span>${toDateDisplay(order.date)}</span>
@@ -1550,12 +1567,12 @@ function calculateStockMetrics() {
         
         if (ACTIVE_STATUSES.includes(status)) {
             order.items.forEach(item => {
-                const key = stockKeyForGodown(order.godownLocation, item.product, "");
+                const key = stockKeyForGodown(order.stockGodownLocation || order.godownLocation, item.product, "");
                 holds.set(key, (holds.get(key) || 0) + (Number.parseInt(item.qty, 10) || 0));
             });
         } else if (status === "Delivered") {
             order.items.forEach(item => {
-                const key = stockKeyForGodown(order.godownLocation, item.product, "");
+                const key = stockKeyForGodown(order.stockGodownLocation || order.godownLocation, item.product, "");
                 delivered.set(key, (delivered.get(key) || 0) + (Number.parseInt(item.qty, 10) || 0));
             });
         }
@@ -1736,7 +1753,7 @@ window.logout = async function() {
 
 window.exportData = function() {
     const headerCols = [
-        "Order ID", "Date", "Status", "Godown", "WhatsApp Group", "Agent",
+        "Order ID", "Date", "Status", "Order Group", "Stock From Godown", "WhatsApp Group", "Agent",
         "Customer", "Phone", "Delivery Area", "Location Link", "Product", "Color", "Quantity", "Notes"
     ];
 
@@ -1763,6 +1780,7 @@ window.exportData = function() {
                 new Date(order.date).toLocaleString(),
                 status,
                 order.godownLocation,
+                order.stockGodownLocation || order.godownLocation,
                 order.whatsappGroup || getGodownGroup(order.godownLocation),
                 order.agentName,
                 order.customerName || "",
@@ -2189,6 +2207,7 @@ function toDbOrder(order) {
         customer_phone: order.customerPhone,
         delivery_area: formatDeliveryInfo(order.deliveryArea, order.locationLink),
         godown_location: order.godownLocation,
+        stock_godown_location: order.stockGodownLocation,
         whatsapp_group: order.whatsappGroup,
         status: order.status,
         notes: dbNotes,
@@ -2223,6 +2242,7 @@ function fromDbOrder(row) {
         deliveryArea: delivery.area,
         locationLink: delivery.locationLink,
         godownLocation: row.godown_location,
+        stockGodownLocation: row.stock_godown_location || row.godown_location,
         whatsappGroup: row.whatsapp_group || "",
         status: row.status || "New",
         notes: notes.trim(),
@@ -2564,4 +2584,3 @@ window.deleteInfluencerOrder = function(id) {
     showToast("Influencer order record deleted.");
     renderInfluencerOrders();
 };
-
