@@ -2652,11 +2652,22 @@ td span {
 }
 
 .checkbox-label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
   user-select: none;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 10px 14px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.checkbox-label:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -2664,13 +2675,13 @@ td span {
   height: 20px;
   min-height: 20px;
   cursor: pointer;
-  accent-color: #a78bfa;
+  accent-color: #0f172a;
 }
 
 .checkbox-label span {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a !important;
 }
 
 /* ── Table Layout Fixes ── */
