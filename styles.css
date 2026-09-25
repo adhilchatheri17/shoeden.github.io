@@ -2961,6 +2961,115 @@ td span {
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
 }
 
+/* ── GODOWN NETWORK MAP PREVIEW PANEL ── */
+.stock-map-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.04);
+}
+
+.stock-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.map-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.map-title-wrap i {
+  font-size: 1.4rem;
+  color: #2563eb;
+  background: #eff6ff;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.map-title-wrap h3 {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 2px 0;
+}
+
+.map-title-wrap span {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.map-hub-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.hub-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.hub-pill:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.hub-pill.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+}
+
+.hub-pill i {
+  color: #3b82f6;
+}
+
+.hub-pill.active i {
+  color: #38bdf8;
+}
+
+.stock-map-frame-wrapper {
+  width: 100%;
+  height: 300px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.stock-map-frame-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
 /* ── GODOWN ZONES CARDS GRID (Matching Reference Image 1) ── */
 .stock-zones-grid {
   display: grid;
@@ -4151,5 +4260,32 @@ td span {
     min-width: 44px;
     padding: 4px 6px;
     font-size: 0.82rem;
+  }
+
+  /* Mobile Stock Map Preview Responsive Rules */
+  .stock-map-panel {
+    padding: 14px;
+    border-radius: 16px;
+    margin-bottom: 14px;
+  }
+
+  .stock-map-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .map-hub-pills {
+    width: 100%;
+    scrollbar-width: none;
+  }
+
+  .map-hub-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stock-map-frame-wrapper {
+    height: 220px;
+    border-radius: 12px;
   }
 }

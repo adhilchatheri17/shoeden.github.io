@@ -14,7 +14,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="styles.css?v=9908">
+    <link rel="stylesheet" href="styles.css?v=9909">
 </head>
 
 <body>
@@ -607,7 +607,46 @@
                                     <strong id="wh-kpi-available" class="kpi-value">0</strong>
                                     <small class="kpi-subtext">Across 5 Godown Zones</small>
                                 </div>
+                    </div>
+
+                    <!-- Godown Hub Network Map Preview -->
+                    <div class="panel stock-map-panel">
+                        <div class="stock-map-header">
+                            <div class="map-title-wrap">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                                <div>
+                                    <h3>Godown Network Map Preview</h3>
+                                    <span>Live hub distribution across Chennai, Erode, Kallakurichi, Madurai, & Kanyakumari</span>
+                                </div>
                             </div>
+                            <div class="map-hub-pills">
+                                <button type="button" class="hub-pill active" onclick="focusMapGodown('all')">
+                                    <i class="fa-solid fa-globe"></i> All TN Hubs
+                                </button>
+                                <button type="button" class="hub-pill" onclick="focusMapGodown('chennai')">
+                                    <i class="fa-solid fa-location-dot"></i> Chennai
+                                </button>
+                                <button type="button" class="hub-pill" onclick="focusMapGodown('erode')">
+                                    <i class="fa-solid fa-location-dot"></i> Erode
+                                </button>
+                                <button type="button" class="hub-pill" onclick="focusMapGodown('kallakurichi')">
+                                    <i class="fa-solid fa-location-dot"></i> Kallakurichi
+                                </button>
+                                <button type="button" class="hub-pill" onclick="focusMapGodown('madurai')">
+                                    <i class="fa-solid fa-location-dot"></i> Madurai
+                                </button>
+                                <button type="button" class="hub-pill" onclick="focusMapGodown('kanyakumari')">
+                                    <i class="fa-solid fa-location-dot"></i> Kanyakumari
+                                </button>
+                            </div>
+                        </div>
+                        <div class="stock-map-frame-wrapper">
+                            <iframe id="stock-google-map"
+                                title="Godown Hub Locations Map"
+                                src="https://maps.google.com/maps?q=Tamil+Nadu,+India&t=m&z=7&output=embed"
+                                loading="lazy"
+                                allowfullscreen>
+                            </iframe>
                         </div>
                     </div>
 

@@ -1387,20 +1387,12 @@ function renderStockTable() {
     if (dispatchedEl) dispatchedEl.textContent = grandHold.toLocaleString();
     if (availableEl) availableEl.textContent = grandAvailable.toLocaleString();
 
-    // ── Render 3D Godown Zone Cards (Matching Reference Image 1) ──
+    // ── Render 3D Godown Zone Cards ──
     if (zonesContainer) {
         const zoneLetters = ["A", "B", "C", "D", "E"];
-        const zoneSubtitles = [
-            "Fast Picking Logistics",
-            "Central Express Hub",
-            "Main Stock Depot",
-            "Regional Distribution",
-            "Southern Dispatch Terminal"
-        ];
 
         zonesContainer.innerHTML = GODOWNS.map((godown, idx) => {
             const letter = zoneLetters[idx % zoneLetters.length];
-            const subtitle = zoneSubtitles[idx % zoneSubtitles.length];
             const godownEstCap = 350;
             let godownPhysical = 0;
             let godownHold = 0;
@@ -1460,7 +1452,6 @@ function renderStockTable() {
                         </div>
                         <div class="zone-title-box">
                             <h4>${escapeHtml(godown.label)}</h4>
-                            <span class="zone-sub">${subtitle}</span>
                         </div>
                         <div class="zone-group-tag">
                             <i class="fa-solid fa-layer-group"></i> ${escapeHtml(godown.group || "Godown")}
@@ -2686,4 +2677,37 @@ window.deleteInfluencerOrder = function(id) {
 
     showToast("Influencer order record deleted.");
     renderInfluencerOrders();
+};
+
+window.focusMapGodown = function(godownKey) {
+    const mapIframe = document.getElementById("stock-google-map");
+    const locations = {
+        all: "Tamil+Nadu,+India",
+        chennai: "Chennai,+Tamil+Nadu,+India",
+        erode: "Erode,+Tamil+Nadu,+India",
+        kallakurichi: "Kallakurichi,+Tamil+Nadu,+India",
+        madurai: "Madurai,+Tamil+Nadu,+India",
+        kanyakumari: "Kanyakumari,+Tamil+Nadu,+India"
+    };
+
+    if (mapIframe && locations[godownKey]) {
+        const zoom = godownKey === "all" ? 7 : 11;
+        mapIframe.src = `https://maps.google.com/maps?q=${locations[godownKey]}&t=m&z=${zoom}&output=embed`;
+    }
+
+    document.querySelectorAll(".map-hub-pills .hub-pill").forEach(pill => {
+        const isMatch = pill.getAttribute("onclick")?.includes(`'${godownKey}'`);
+        pill.classList.toggle("active", !!isMatch);
+    });
+
+    if (godownKey !== "all") {
+        const zoneCards = document.querySelectorAll(".godown-zone-card");
+        zoneCards.forEach(card => {
+            if (card.textContent.toLowerCase().includes(godownKey)) {
+                card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                card.style.borderColor = "#2563eb";
+                setTimeout(() => { card.style.borderColor = ""; }, 2000);
+            }
+        });
+    }
 };
