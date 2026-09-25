@@ -4067,6 +4067,25 @@ td span {
     min-height: 44px;
   }
 
+  /* ── Mobile Header Clearance & Hamburger Menu Alignment ── */
+  .content-wrapper {
+    min-width: 0;
+    padding: 14px 14px 110px 14px;
+    padding-top: 68px !important;
+  }
+
+  .mobile-menu-toggle {
+    top: 12px;
+    left: 12px;
+    z-index: 990;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    border: 1px solid #cbd5e1;
+  }
+
   /* ── Mobile Responsive Stock Screen Optimizations ── */
   #stock {
     width: 100%;
@@ -4076,104 +4095,132 @@ td span {
   }
 
   .warehouse-hero-card {
-    padding: 6px 8px;
-    margin-bottom: 8px;
-    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border-radius: 16px;
     width: 100%;
     box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
   }
 
   .warehouse-kpi-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
   }
 
   .warehouse-kpi-card {
-    padding: 6px 8px;
-    border-radius: 8px;
-    gap: 4px;
-    min-width: 0;
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    gap: 10px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+
+  .warehouse-kpi-card.highlight-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
   }
 
   .warehouse-kpi-card .kpi-icon-wrap {
-    width: 24px;
-    height: 24px;
-    font-size: 0.72rem;
-    border-radius: 6px;
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+    border-radius: 10px;
     flex-shrink: 0;
   }
 
   .warehouse-kpi-card .kpi-label {
-    font-size: 0.52rem;
-    letter-spacing: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+    white-space: normal;
   }
 
   .warehouse-kpi-card .kpi-value {
-    font-size: 0.92rem;
+    font-size: 1.25rem;
+    font-weight: 800;
   }
 
   .warehouse-kpi-card .kpi-subtext {
-    font-size: 0.54rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.72rem;
+    white-space: normal;
   }
 
   .stock-main-panel {
-    padding: 8px 10px;
-    border-radius: 12px;
+    padding: 14px;
+    border-radius: 18px;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
   }
 
   .stock-main-panel .panel-heading.row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
   }
 
   .stock-main-panel .panel-heading.row h3 {
-    font-size: 0.85rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
     margin-bottom: 2px;
   }
 
   .stock-main-panel .panel-heading.row span {
-    font-size: 0.62rem;
+    font-size: 0.75rem;
+    color: #64748b;
   }
 
   .stock-header-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 4px;
-    width: 100%;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
   }
 
   .view-toggle-group {
-    flex: 1;
-    display: flex;
+    width: 100% !important;
+    display: flex !important;
     background: #f1f5f9;
-    padding: 2px;
+    padding: 3px;
     border-radius: 999px;
+    gap: 2px;
+    box-sizing: border-box;
   }
 
   .view-toggle-btn {
-    flex: 1;
+    flex: 1 !important;
+    text-align: center;
     justify-content: center;
-    padding: 4px 6px;
-    font-size: 0.64rem;
+    padding: 8px 4px !important;
+    font-size: 0.72rem !important;
     font-weight: 700;
+    border-radius: 999px;
     white-space: nowrap;
+  }
+
+  .stock-header-actions .btn-compact {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 10px;
   }
 
   .stock-zones-grid {
     grid-template-columns: 1fr !important;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 14px;
+    margin-top: 14px;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -4184,138 +4231,177 @@ td span {
     max-width: 100% !important;
     min-width: 0 !important;
     box-sizing: border-box;
-    padding: 8px 10px;
-    border-radius: 12px;
-    gap: 6px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    padding: 14px 16px;
+    border-radius: 18px;
+    gap: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
   }
 
   .zone-card-header {
-    flex-wrap: wrap;
-    gap: 6px;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 10px;
   }
 
   .zone-badge {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 900;
   }
 
   .zone-badge span {
-    font-size: 0.45rem;
+    font-size: 0.5rem;
   }
 
   .zone-badge strong {
-    font-size: 0.8rem;
+    font-size: 1rem;
   }
 
   .zone-title-box h4 {
-    font-size: 0.84rem;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
   }
 
   .zone-group-tag {
-    font-size: 0.58rem;
-    padding: 2px 5px;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 999px;
   }
 
   .zone-capacity-box {
-    padding: 5px 8px;
-    border-radius: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8fafc;
   }
 
   .zone-cap-head {
-    font-size: 0.64rem;
+    font-size: 0.75rem;
+    font-weight: 700;
   }
 
   .capacity-track {
-    height: 5px;
+    height: 6px;
   }
 
   .zone-summary-pills {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
-    width: 100%;
-    min-width: 0;
+    gap: 6px;
+    margin: 2px 0;
   }
 
   .zone-pill {
-    padding: 3px 2px;
-    border-radius: 6px;
+    padding: 8px 4px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    text-align: center;
     min-width: 0;
     width: 100%;
     box-sizing: border-box;
   }
 
   .zone-pill span {
-    font-size: 0.5rem;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
   }
 
   .zone-pill strong {
-    font-size: 0.82rem;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #0f172a;
   }
 
   .zone-product-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 10px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     width: 100%;
     box-sizing: border-box;
-    padding: 6px 8px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 4px;
-    border-radius: 8px;
   }
 
   .zone-prod-info {
-    flex: 1 1 auto;
-    min-width: 0;
+    grid-column: 1 / -1;
+    width: 100%;
   }
 
   .zone-prod-info strong {
-    font-size: 0.76rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #0f172a;
     display: block;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.35;
   }
 
   .zone-prod-cat {
-    font-size: 0.58rem;
+    font-size: 0.72rem;
+    color: #64748b;
   }
 
   .zone-prod-metrics {
     display: flex;
-    gap: 3px;
-    flex-shrink: 0;
+    gap: 6px;
+    align-items: center;
   }
 
   .zone-metric-pill {
-    font-size: 0.58rem;
-    padding: 1px 4px;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
     white-space: nowrap;
   }
 
   .zone-prod-stepper {
-    flex-shrink: 0;
-    gap: 2px;
-    padding: 1px 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    padding: 3px 5px;
+    border-radius: 10px;
   }
 
   .stepper-btn {
-    width: 22px;
-    height: 22px;
-    font-size: 0.8rem;
+    width: 32px;
+    height: 32px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    border-radius: 8px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+    display: grid;
+    place-items: center;
   }
 
   .zone-stock-input {
-    width: 28px;
-    font-size: 0.8rem;
-    padding: 1px 2px;
+    width: 38px;
+    height: 32px;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 800;
+    border: none;
+    background: transparent;
+    color: #0f172a;
   }
 
   .stock-scroll {
@@ -4323,64 +4409,77 @@ td span {
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid #e2e8f0;
   }
 
+  .stock-table th:first-child,
+  .stock-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #ffffff;
+    border-right: 2px solid #e2e8f0;
+  }
+
   .stock-table {
-    min-width: 550px;
-    font-size: 0.72rem;
+    min-width: 600px;
+    font-size: 0.76rem;
   }
 
   .stock-table th,
   .stock-table td {
-    padding: 6px 8px;
+    padding: 8px 10px;
   }
 
   .stock-table input[type="number"] {
-    min-width: 38px;
-    padding: 3px 4px;
-    font-size: 0.78rem;
+    min-width: 44px;
+    padding: 4px 6px;
+    font-size: 0.82rem;
   }
 
   /* Mobile Stock Map Preview Responsive Rules */
   .stock-map-panel,
   .stock-map-view {
-    padding: 10px;
-    border-radius: 12px;
-    margin-top: 8px;
-    margin-bottom: 8px;
+    padding: 14px;
+    border-radius: 16px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
   }
 
   .stock-map-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 10px;
+    margin-bottom: 10px;
   }
 
   .map-title-wrap i {
-    width: 32px;
-    height: 32px;
-    font-size: 1rem;
-    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+    border-radius: 10px;
   }
 
   .map-title-wrap h3 {
-    font-size: 0.9rem;
+    font-size: 1rem;
+    font-weight: 800;
   }
 
   .map-title-wrap span {
-    font-size: 0.65rem;
+    font-size: 0.72rem;
+    color: #64748b;
   }
 
   .map-hub-pills {
     width: 100%;
     display: flex;
-    gap: 4px;
+    gap: 6px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 2px;
+    padding-bottom: 6px;
     scrollbar-width: none;
   }
 
@@ -4389,12 +4488,40 @@ td span {
   }
 
   .hub-pill {
-    padding: 4px 8px;
-    font-size: 0.68rem;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .stock-map-frame-wrapper {
-    height: 250px;
-    border-radius: 10px;
+    height: 280px;
+    border-radius: 14px;
+    border: 1px solid #cbd5e1;
+    overflow: hidden;
+  }
+
+  /* Mobile Sales Report Pills & Scroll Clearance */
+  .sales-filter-group,
+  .agent-pills {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    width: 100%;
+    scrollbar-width: none;
+  }
+
+  .sales-filter-group::-webkit-scrollbar,
+  .agent-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sales-filter-pill {
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 }
